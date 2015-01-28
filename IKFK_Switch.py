@@ -15,7 +15,7 @@ else:
 ###### GET PREFIX ######
 dialog= cmds.promptDialog( title='IKFK Auto Setup', message='arm or leg ?', button=['OK', 'Cancel'], defaultButton= 'OK', cancelButton='Cancel', dismissString='Cancel')
 prefix= cmds.promptDialog( query= True, text= True ) + '_'
-
+print prefix
 jntGrp= cmds.group( n= '%s%sjnt_hrc' % ( rl, prefix ), em=1 )
 partsGrp= cmds.group( n= '%s%sparts_hrc' % ( rl, prefix ), em=0 )
 ctrlGrp= cmds.group( n= '%s%sctrl_hrc' % ( rl, prefix ), em=1 )
