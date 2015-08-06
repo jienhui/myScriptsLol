@@ -82,7 +82,9 @@ class HeadSetup_Cl( object ):
         cmds.xform( '%s.cv[*]' % self.mainEye[0][0], ro= [0,90,0], s=[4,2,4]  )
         headCnst= cmds.parentConstraint( self.head, self.mainEye[-1], mo=1 )
         cmds.connectAttr( '%s.follow' % self.mainEye[0][0], str(headCnst[0]) + '.%sW0' % self.head )
-        cmds.parent( eyeSpaceList[0], eyeSpaceList[1], self.mainEye[0] ) 
+        cmds.parent( eyeSpaceList[0], eyeSpaceList[1], self.mainEye[0] )
+        
+        return [ self.neckCtrl[-1], self.headSpace, self.mainEye[0] ]
         
     # Mouth Setup Function    
     def mouthSetup_Fn( self, jaw, tongue, upTeeth, dnTeeth, name ):
@@ -157,10 +159,11 @@ class HeadSetup_Cl( object ):
         cmds.parentConstraint( self.jawCtrl, teethSpaceList[1], mo=1 )
         cmds.parentConstraint( self.head, teethSpaceList[0], mo=1 )
         
-        
-        return [ self.neckCtrl[-1], self.headSpace, self.jawSpace, self.innerMouth, self.mainEye[0] ]
+        return [ self.jawSpace, self.innerMouth ]
 
 if __name__ == '__main__' :
     CC= HeadSetup_Cl()
     h= CC.headSetup_Fn( 'neck01_jnt', 'head01_jnt', 'l_eye01_jnt', 'r_eye01_jnt', 'head' )
     m= CC.mouthSetup_Fn( 'jaw01_jnt', 'tongue01_jnt', 'upper_teeth01_jnt', 'lower_teeth01_jnt', 'mouth' )
+    print m
+    print h
