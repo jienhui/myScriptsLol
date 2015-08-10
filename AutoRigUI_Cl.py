@@ -2,14 +2,17 @@ import maya.cmds as cmds
 import maya.cmds as cmds
 import cCtrlHrc_Cl as CC
 import cNailCtrlHrc_Cl as CN
+import cBasicSetup_Cl as CB
 import ArmAutoRig_Cl as AA
+import cSpineSetup_Cl as CS
+import cHeadSetup_Cl as CH
+import LegAutoRig_Cl as LA
 import bendySetup_Cl as B
 
 # Proxy Bone Class
         
 def AutoRigUI_Fn():
     
-    win= "cAutoRig Setup"
     
     # Global Variables
     # Head Variables 
@@ -22,8 +25,10 @@ def AutoRigUI_Fn():
     global headB3
     global headTF4
     global headB4
-    # InnerMouth Variables
+    # Mouth Variables
     global cb2
+    global mouthTF0
+    global mouthB0
     global mouthTF1
     global mouthB1
     global mouthTF2
@@ -32,8 +37,14 @@ def AutoRigUI_Fn():
     global mouthB3
     # Spine Variables
     global cb3
+    global rootTF1
+    global spineTF0
+    global spineB0
     global spineTF1
+    global rootB1
     global spineB1
+    global spineTF2
+    global spineB2
     # Arm Variables
     global cbG1
     global armTF1
@@ -91,19 +102,19 @@ def AutoRigUI_Fn():
     global FL7
     
     # Global Procedure
-    if cmds.window( win, q=1, ex=True ):
-        cmds.deleteUI( win )
-    
-    if cmds.windowPref( win, ex=True ):
-        cmds.windowPref( win, remove=True )
+    if cmds.window( "cAutoRig Setup", q=1, ex=True ):
+        cmds.deleteUI( "cAutoRig Setup" )
+        cmds.windowPref( "cAutoRig Setup", remove=True )
         
     # Main Window 
-    window= cmds.window( win, title="cAutoRig v1.0", iconName='Autorig', s=0 )
+    window= cmds.window( "cAutoRig Setup", title="cAutoRig v1.0", iconName='Autorig', s=0, h=600 )
     # Menu Bar
     cmds.menuBarLayout()
     cmds.menu( label='Edit' )       
     cmds.menuItem( label='Reset', c='cReset()' )
-    cmds.menuItem( label='Get Name', c='cGetName()' )
+    cmds.menuItem( divider=True )
+    cmds.menuItem( label='Get Name', c='cGetName()')
+    cmds.menuItem( divider=True )
     cmds.menuItem( label= 'Expand All', c='cExpand()' )
     cmds.menuItem( label= 'Contract All', c='cContract()' )
     cmds.menu( label= 'Help', helpMenu=1 )
@@ -111,10 +122,11 @@ def AutoRigUI_Fn():
     cmds.separator( h=5 )
     cmds.setParent('..')
     # Body UI
+    cmds.scrollLayout( h=570, cr=1, vst=0 )
     cmds.columnLayout( adjustableColumn=True )
     # Head Setup
     FL1= cmds.frameLayout( label= 'Head', borderStyle= 'etchedOut', collapsable= 1 )
-    cb1= cmds.checkBox( label= 'Head Rig Setup', v=1 )
+    cb1= cmds.checkBox( label= 'Head Rig Setup', v=1, onc= 'cHeadCBOn()', ofc= 'cHeadCBOff()' )
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Neck  :' )
     headTF1= cmds.textField( placeholderText= 'Neck joint name')
@@ -125,7 +137,7 @@ def AutoRigUI_Fn():
     headTF2= cmds.textField( placeholderText= 'Head joint name')
     headB2= cmds.button( label= 'Add', c= 'cHeadAddName()' )
     cmds.setParent('..')
-    cmds.rowLayout( numberOfColumns=5 )
+    cmds.rowLayout( numberOfColumns=5, ad2=1, ad4=1 )
     cmds.text( 'Eyes   : ' )
     headTF3= cmds.textField( placeholderText= 'Left eye joint name' )
     headB3= cmds.button( label= 'Add', c= 'cLEyeAddName()' )
@@ -133,8 +145,13 @@ def AutoRigUI_Fn():
     headB4= cmds.button( label= 'Add', c= 'cREyeAddName()' )
     cmds.setParent('..')
     # Inner Mouth
-    FL2= cmds.frameLayout( label= 'Inner Mouth', borderStyle= 'etchedOut', collapsable= 1, collapse= 1 )
-    cb2= cmds.checkBox( label= 'Inner Mouth Rig Setup', v=1 )
+    FL2= cmds.frameLayout( label= 'Mouth', borderStyle= 'etchedOut', collapsable= 1, collapse= 1 )
+    cb2= cmds.checkBox( label= 'Mouth Rig Setup', v=1, onc= 'cMouthCBOn()', ofc= 'cMouthCBOff()' )
+    cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
+    cmds.text( 'Jaw     :' )
+    mouthTF0= cmds.textField( placeholderText= 'First jaw joint name')
+    mouthB0= cmds.button( label= 'Add', c= 'cJawAddName()' )
+    cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Tongue:' )
     mouthTF1= cmds.textField( placeholderText= 'First tongue joint name')
@@ -151,19 +168,34 @@ def AutoRigUI_Fn():
     cmds.setParent('..')
     cmds.separator()
     # Spine
-    FL3= cmds.frameLayout( label= 'Spine', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
-    cb3= cmds.checkBox( label= 'Spine Rig Setup', v=1 )
+    FL3= cmds.frameLayout( label= 'Spine', borderStyle= 'etchedOut', collapsable= 1 )
+    cb3= cmds.checkBox( label= 'Spine Rig Setup', v=1, onc= 'cSpineCBOn()', ofc= 'cSpineCBOff()' )
+    cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
+    cmds.text( 'Root    :' )
+    rootTF1= cmds.textField( placeholderText= 'First root joint name' )
+    rootB1= cmds.button( label= 'Add', c= 'cRootAddName()' )
+    cmds.setParent('..')
+    cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
+    cmds.text( 'Pelvis  :' )
+    spineTF0= cmds.textField( placeholderText= 'First pelvis joint name' )
+    spineB0= cmds.button( label= 'Add', c= 'cPelvisAddName()' )
+    cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Spine   :' )
     spineTF1= cmds.textField( placeholderText= 'First spine joint name' )
     spineB1= cmds.button( label= 'Add', c= 'cSpineAddName()' )
     cmds.setParent('..')
+    cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
+    cmds.text( 'Chest  :' )
+    spineTF2= cmds.textField( placeholderText= 'First chest joint name' )
+    spineB2= cmds.button( label= 'Add', c= 'cChestAddName()' )
+    cmds.setParent('..')
     cmds.setParent('..')
     cmds.setParent('..')
     cmds.separator()
     # Arm
-    FL4= cmds.frameLayout( label= 'Arm', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
-    cbG1= cmds.checkBoxGrp( ncb=3, la3=['Arm Rig Setup','Setup Bendy', 'Setup Both Arms'], va3= [1,1,1], cw3= [100,100,100] )
+    FL4= cmds.frameLayout( label= 'Arm', borderStyle= 'etchedOut', collapsable= 1 )
+    cbG1= cmds.checkBoxGrp( ncb=3, la3=['Arm Rig Setup','Setup Bendy', 'Setup Both Arms'], va3= [1,1,1], cw3= [100,100,100], on1= 'cArmCBOn()', of1= 'cArmCBOff()' )
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Clavicle   :' )
     armTF1= cmds.textField( placeholderText= 'Clavicle joint name' )
@@ -176,29 +208,29 @@ def AutoRigUI_Fn():
     cmds.setParent('..')
     # Fingers
     FL5= cmds.frameLayout( label= 'Fingers', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
-    cbG2= cmds.checkBoxGrp( ncb=2, la2=['Finger Rig Setup','Setup Both Arms'], va2= [1,1], cw2= [150,100] )
+    cbG2= cmds.checkBoxGrp( ncb=2, la2=['Finger Rig Setup','Setup Both Arms'], va2= [1,1], cw2= [150,100], on1= 'cFingersCBOn()', of1= 'cFingersCBOff()' )
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
-    fingerCb1= cmds.checkBox( label= 'Thumb:', v=1 )
+    fingerCb1= cmds.checkBox( label= 'Thumb:', v=1, onc= 'cThumbCBOn()', ofc= 'cThumbCBOff()' )
     fingerTF1= cmds.textField( placeholderText= 'First thumb joint name' )
     fingerB1= cmds.button( label= 'Add', c= 'cThumbAddName()' )
     cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
-    fingerCb2= cmds.checkBox( label= 'Index :', v=1  )
+    fingerCb2= cmds.checkBox( label= 'Index :', v=1, onc= 'cIndexCBOn()', ofc= 'cIndexCBOff()'  )
     fingerTF2= cmds.textField( placeholderText= 'First index joint name' )
     fingerB2= cmds.button( label= 'Add', c= 'cIndexAddName()' )
     cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
-    fingerCb3= cmds.checkBox( label= 'Middle:', v=1  )
+    fingerCb3= cmds.checkBox( label= 'Middle:', v=1, onc= 'cMiddleCBOn()', ofc= 'cMiddleCBOff()'  )
     fingerTF3= cmds.textField( placeholderText= 'First Middle joint name' )
     fingerB3= cmds.button( label= 'Add', c= 'cMiddleAddName()' )
     cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
-    fingerCb4= cmds.checkBox( label= 'Ring   :', v=1  )
+    fingerCb4= cmds.checkBox( label= 'Ring   :', v=1, onc= 'cRingCBOn()', ofc= 'cRingCBOff()'  )
     fingerTF4= cmds.textField( placeholderText= 'First ring joint name' )
     fingerB4= cmds.button( label= 'Add', c= 'cRingAddName()' )
     cmds.setParent('..')
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
-    fingerCb5= cmds.checkBox( label= 'Pinky :', v=1  )
+    fingerCb5= cmds.checkBox( label= 'Pinky :', v=1, onc= 'cPinkyCBOn()', ofc= 'cPinkyCBOff()'  )
     fingerTF5= cmds.textField( placeholderText= 'First pinky joint name' )
     fingerB5= cmds.button( label= 'Add', c= 'cPinkyAddName()' )
     cmds.setParent('..')
@@ -206,8 +238,8 @@ def AutoRigUI_Fn():
     cmds.setParent('..')
     cmds.separator()
     # Leg
-    FL6= cmds.frameLayout( label= 'Leg', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
-    cbG3= cmds.checkBoxGrp( ncb=3, la3=['Leg Rig Setup','Setup Bendy','Setup Both Legs'], va3= [1,1,1], cw3= [100,100,100] )
+    FL6= cmds.frameLayout( label= 'Leg', borderStyle= 'etchedOut', collapsable= 1 )
+    cbG3= cmds.checkBoxGrp( ncb=3, la3=['Leg Rig Setup','Setup Bendy','Setup Both Legs'], va3= [1,1,1], cw3= [100,100,100], on1= 'cLegCBOn()', of1= 'cLegCBOff()' )
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Hip   :' )
     legTF1= cmds.textField( placeholderText= 'Hip joint name' )
@@ -215,7 +247,7 @@ def AutoRigUI_Fn():
     cmds.setParent('..')
     # Reverse Foot 
     FL7= cmds.frameLayout( label= 'Feet', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
-    cbG4= cmds.checkBoxGrp( ncb=2, la2=['Reverse Foot Setup','Setup Both Feets'], va2= [1,1], cw2= [150,100] )
+    cbG4= cmds.checkBoxGrp( ncb=2, la2=['Reverse Foot Setup','Setup Both Feets'], va2= [1,1], cw2= [150,100], on1= 'cReverseFootCBOn()', of1= 'cReverseFootCBOff()' )
     cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
     cmds.text( 'Heel   :' )
     footTF1= cmds.textField( placeholderText= 'Heel joint name' )
@@ -250,16 +282,17 @@ def AutoRigUI_Fn():
     cmds.setParent('..')
     cmds.separator()
     # Setup Button
+    cmds.setParent('..')
     cmds.columnLayout( adjustableColumn=True )
-    cmds.button( label='Setup Rig', bgc= [0.65,0.65,0.65] )
+    cmds.button( label='Setup Rig', bgc= [0.65,0.65,0.65], c= 'cSetup()' )
     cmds.button( label='Close', command=('cmds.deleteUI(\"' + window + '\", window=True)') )
     cmds.setParent( '..' )
     cmds.showWindow( window )
     
-    tfList= [ headTF1, headTF2, headTF3, headTF4, mouthTF1, mouthTF2, mouthTF3, spineTF1, armTF1, armTF2, fingerTF1, fingerTF2, fingerTF3, fingerTF4, fingerTF5, legTF1, footTF1, footTF2, footTF3, footTF4, footTF5, footTF6 ]
+    tfList= [ headTF1, headTF2, headTF3, headTF4, mouthTF0, mouthTF1, mouthTF2, mouthTF3, rootTF1, spineTF0, spineTF1, spineTF2, armTF1, armTF2, fingerTF1, fingerTF2, fingerTF3, fingerTF4, fingerTF5, legTF1, footTF1, footTF2, footTF3, footTF4, footTF5, footTF6 ]
     cbList= [ cb1, cb2, cb3, fingerCb1, fingerCb2, fingerCb3, fingerCb4, fingerCb5 ]
     cbGList= [ cbG1, cbG2, cbG3, cbG4 ]
-    bList= [ headB1, headB2, headB3, headB4, mouthB1, mouthB2, mouthB3, spineB1, armB1, armB2, fingerB1, fingerB2, fingerB3, fingerB4, fingerB5, legB1, footB1, footB2, footB3, footB4, footB5, footB6 ]
+    bList= [ headB1, headB2, headB3, headB4, mouthB0, mouthB1, mouthB2, mouthB3, rootB1, spineB0, spineB1, spineB2, armB1, armB2, fingerB1, fingerB2, fingerB3, fingerB4, fingerB5, legB1, footB1, footB2, footB3, footB4, footB5, footB6 ]
     FLList= [ FL1, FL2, FL3, FL4, FL5, FL6, FL7 ]
     
 # Reset Funtion
@@ -274,6 +307,16 @@ def cReset():
     for each in cbGList:
         cmds.checkBoxGrp( each, e=1, va2= [1,1] )
         
+    cmds.checkBoxGrp( cbG1, e=1, va3= [1,1,1] )
+    cmds.checkBoxGrp( cbG3, e=1, va3= [1,1,1] )
+    cmds.frameLayout( FL1, e=1, collapse= 0 )
+    cmds.frameLayout( FL2, e=1, collapse= 1 )
+    cmds.frameLayout( FL3, e=1, collapse= 0 )
+    cmds.frameLayout( FL4, e=1, collapse= 0 )
+    cmds.frameLayout( FL5, e=1, collapse= 1 )
+    cmds.frameLayout( FL6, e=1, collapse= 0 )
+    cmds.frameLayout( FL7, e=1, collapse= 1 )
+        
 # Help Funtion
 def cHelpMenu():
     cHelpWin= 'Auto Rig Help Window'
@@ -286,7 +329,7 @@ def cHelpMenu():
         
     cHelpWin= cmds.window( title= 'Auto Rig v.1.0 Help', s=0, w= 400, h= 150 )
     cmds.frameLayout( 'Help', borderStyle= 'etchedOut', collapsable= 1, collapse=0  )
-    form= cmds.formLayout()
+    cmds.formLayout()
     content= ('This is the joint based auto rig setup, a proper joint chain should be built before using this Auto Rig Setup.'
               + '\n\n'
               + 'The Auto Get Name Function will always get the 1st joint which matched the name. '
@@ -322,6 +365,11 @@ def cREyeAddName():
     cmds.textField( headTF4, e=1, tx= str(selJnt[0]) )
 
 # Add Mouth Name Funtion
+def cJawAddName():
+    
+    selJnt= cmds.ls(sl=1)
+    cmds.textField( mouthTF0, e=1, tx= str(selJnt[0]) )
+    
 def cTongueAddName():
    
     selJnt= cmds.ls(sl=1)
@@ -337,11 +385,29 @@ def cDnTeethAddName():
     selJnt= cmds.ls(sl=1)
     cmds.textField( mouthTF3, e=1, tx= str(selJnt[0]) )
     
+# Add Root Name Funtion
+def cRootAddName():
+   
+    selJnt= cmds.ls(sl=1)
+    cmds.textField( rootTF1, e=1, tx= str(selJnt[0]) ) 
+    
+# Add Pelvis Name Funtion
+def cPelvisAddName():
+   
+    selJnt= cmds.ls(sl=1)
+    cmds.textField( spineTF0, e=1, tx= str(selJnt[0]) ) 
+
 # Add Spine Name Funtion
 def cSpineAddName():
    
     selJnt= cmds.ls(sl=1)
     cmds.textField( spineTF1, e=1, tx= str(selJnt[0]) )
+    
+# Add Chest Name Funtion
+def cChestAddName():
+   
+    selJnt= cmds.ls(sl=1)
+    cmds.textField( spineTF2, e=1, tx= str(selJnt[0]) )
     
 # Add Arm Name Funtion
 def cClavicleAddName():
@@ -422,6 +488,9 @@ def cGetName():
     
     cmds.select( cl=1 )
     selJnt= cmds.ls( type= 'joint', v=1 )
+    for each in selJnt:
+        if 'root' in str(each):
+            cmds.textField( rootTF1, e=1 , tx= str(each))
     jnt01= []
     for each in selJnt:
         if '1' in str(each):
@@ -437,6 +506,8 @@ def cGetName():
                 cmds.textField( headTF3, e=1, tx= str(each) )
             if 'r' in str(each):
                 cmds.textField( headTF4, e=1, tx= str(each) )
+        if 'jaw' in str(each):
+            cmds.textField( mouthTF0, e=1 , tx= str(each))
         if 'tongue' in str(each):
             cmds.textField( mouthTF1, e=1 , tx= str(each))
         if 'teeth' in str(each):
@@ -444,8 +515,12 @@ def cGetName():
                 cmds.textField( mouthTF2, e=1, tx= str(each))
             if 'low' in str(each):
                 cmds.textField( mouthTF3, e=1, tx= str(each))
+        if 'pelvis' in str(each):
+            cmds.textField( spineTF0, e=1 , tx= str(each))
         if 'spine' in str(each):
             cmds.textField( spineTF1, e=1 , tx= str(each))
+        if 'chest' in str(each):
+            cmds.textField( spineTF2, e=1 , tx= str(each))
         if 'l_' in str(each):
             if 'clavicle' in str(each):
                     cmds.textField( armTF1, e=1 , tx= str(each))
@@ -491,6 +566,299 @@ def cContract():
     for each in FLList:
         cmds.frameLayout( each, e=1, collapse= 1 )
     
+# Check Box Function
+# Head On
+def cHeadCBOn():
 
+    cmds.textField( headTF1, e=1, en= True )
+    cmds.textField( headTF2, e=1, en= True )
+    cmds.textField( headTF3, e=1, en= True )
+    cmds.textField( headTF4, e=1, en= True )
+    cmds.button( headB1, e=1, en= True )
+    cmds.button( headB2, e=1, en= True )
+    cmds.button( headB3, e=1, en= True )
+    cmds.button( headB4, e=1, en= True )
+# Head Off
+def cHeadCBOff():
+
+    cmds.textField( headTF1, e=1, en= False )
+    cmds.textField( headTF2, e=1, en= False )
+    cmds.textField( headTF3, e=1, en= False )
+    cmds.textField( headTF4, e=1, en= False )
+    cmds.button( headB1, e=1, en= False )
+    cmds.button( headB2, e=1, en= False )
+    cmds.button( headB3, e=1, en= False )
+    cmds.button( headB4, e=1, en= False )
+# Mouth On
+def cMouthCBOn():
+    
+    cmds.textField( mouthTF0, e=1, en= True )
+    cmds.textField( mouthTF1, e=1, en= True )
+    cmds.textField( mouthTF2, e=1, en= True )
+    cmds.textField( mouthTF3, e=1, en= True )
+    cmds.button( mouthB0, e=1, en= True )
+    cmds.button( mouthB1, e=1, en= True )
+    cmds.button( mouthB2, e=1, en= True )
+    cmds.button( mouthB3, e=1, en= True )
+# Mouth Off
+def cMouthCBOff():
+    
+    cmds.textField( mouthTF0, e=1, en= False )
+    cmds.textField( mouthTF1, e=1, en= False )
+    cmds.textField( mouthTF2, e=1, en= False )
+    cmds.textField( mouthTF3, e=1, en= False )
+    cmds.button( mouthB0, e=1, en= False )
+    cmds.button( mouthB1, e=1, en= False )
+    cmds.button( mouthB2, e=1, en= False )
+    cmds.button( mouthB3, e=1, en= False )
+# Spine On
+def cSpineCBOn():
+    
+    cmds.textField( rootTF1, e=1, en= True )
+    cmds.textField( spineTF0, e=1, en= True )
+    cmds.textField( spineTF1, e=1, en= True )
+    cmds.textField( spineTF2, e=1, en= True )
+    cmds.button( rootB1, e=1, en= True )
+    cmds.button( spineB0, e=1, en= True )
+    cmds.button( spineB1, e=1, en= True )
+    cmds.button( spineB2, e=1, en= True )
+# Spine Off
+def cSpineCBOff():
+    
+    cmds.textField( rootTF1, e=1, en= False )
+    cmds.textField( spineTF0, e=1, en= False )
+    cmds.textField( spineTF1, e=1, en= False )
+    cmds.textField( spineTF2, e=1, en= False )
+    cmds.button( rootB1, e=1, en= False )
+    cmds.button( spineB0, e=1, en= False )
+    cmds.button( spineB1, e=1, en= False )
+    cmds.button( spineB2, e=1, en= False )
+# Arm On
+def cArmCBOn():
+    
+    cmds.textField( armTF1, e=1, en= True )
+    cmds.textField( armTF2, e=1, en= True )
+    cmds.button( armB1, e=1, en= True )
+    cmds.button( armB2, e=1, en= True )
+# Arm Off
+def cArmCBOff():
+    
+    cmds.textField( armTF1, e=1, en= False )
+    cmds.textField( armTF2, e=1, en= False )
+    cmds.button( armB1, e=1, en= False )
+    cmds.button( armB2, e=1, en= False )
+# Finger On
+def cFingersCBOn():
+    
+    cmds.textField( fingerTF1, e=1, en= True )
+    cmds.textField( fingerTF2, e=1, en= True )
+    cmds.textField( fingerTF3, e=1, en= True )
+    cmds.textField( fingerTF4, e=1, en= True )
+    cmds.textField( fingerTF5, e=1, en= True )
+    cmds.button( fingerB1, e=1, en= True )
+    cmds.button( fingerB2, e=1, en= True )
+    cmds.button( fingerB3, e=1, en= True )
+    cmds.button( fingerB4, e=1, en= True )
+    cmds.button( fingerB5, e=1, en= True )
+    cmds.checkBox( fingerCb1, e=1, en= True )
+    cmds.checkBox( fingerCb2, e=1, en= True )
+    cmds.checkBox( fingerCb3, e=1, en= True )
+    cmds.checkBox( fingerCb4, e=1, en= True )
+    cmds.checkBox( fingerCb5, e=1, en= True )
+# Finger Off
+def cFingersCBOff():
+    
+    cmds.textField( fingerTF1, e=1, en= False )
+    cmds.textField( fingerTF2, e=1, en= False )
+    cmds.textField( fingerTF3, e=1, en= False )
+    cmds.textField( fingerTF4, e=1, en= False )
+    cmds.textField( fingerTF5, e=1, en= False )
+    cmds.button( fingerB1, e=1, en= False )
+    cmds.button( fingerB2, e=1, en= False )
+    cmds.button( fingerB3, e=1, en= False )
+    cmds.button( fingerB4, e=1, en= False )
+    cmds.button( fingerB5, e=1, en= False )
+    cmds.checkBox( fingerCb1, e=1, en= False )
+    cmds.checkBox( fingerCb2, e=1, en= False )
+    cmds.checkBox( fingerCb3, e=1, en= False )
+    cmds.checkBox( fingerCb4, e=1, en= False )
+    cmds.checkBox( fingerCb5, e=1, en= False )
+# Thumb On
+def cThumbCBOn():
+    
+    cmds.textField( fingerTF1, e=1, en= True )
+    cmds.button( fingerB1, e=1, en= True )
+# Thumb Off
+def cThumbCBOff():
+    
+    cmds.textField( fingerTF1, e=1, en= False )
+    cmds.button( fingerB1, e=1, en= False )
+# Index On
+def cIndexCBOn():
+    
+    cmds.textField( fingerTF2, e=1, en= True )
+    cmds.button( fingerB2, e=1, en= True )
+# Index Off
+def cIndexCBOff():
+    
+    cmds.textField( fingerTF2, e=1, en= False )
+    cmds.button( fingerB2, e=1, en= False )
+# Middle On
+def cMiddleCBOn():
+    
+    cmds.textField( fingerTF3, e=1, en= True )
+    cmds.button( fingerB3, e=1, en= True )
+# Middle Off
+def cMiddleCBOff():
+    
+    cmds.textField( fingerTF3, e=1, en= False )
+    cmds.button( fingerB3, e=1, en= False )
+# Ring On
+def cRingCBOn():
+    
+    cmds.textField( fingerTF4, e=1, en= True )
+    cmds.button( fingerB4, e=1, en= True )
+# Ring Off
+def cRingCBOff():
+    
+    cmds.textField( fingerTF4, e=1, en= False )
+    cmds.button( fingerB4, e=1, en= False )
+# Pinky On
+def cPinkyCBOn():
+    
+    cmds.textField( fingerTF5, e=1, en= True )
+    cmds.button( fingerB5, e=1, en= True )
+# Piky Off
+def cPinkyCBOff():
+    
+    cmds.textField( fingerTF5, e=1, en= False )
+    cmds.button( fingerB5, e=1, en= False )
+# Leg On
+def cLegCBOn():
+    
+    cmds.textField( legTF1, e=1, en= True )
+    cmds.button( legB1, e=1, en= True )
+# Leg Off
+def cLegCBOff():
+    
+    cmds.textField( legTF1, e=1, en= False )
+    cmds.button( legB1, e=1, en= False )
+# Reverse Foot On
+def cReverseFootCBOn():
+    
+    cmds.textField( footTF1, e=1, en= True )
+    cmds.textField( footTF2, e=1, en= True )
+    cmds.textField( footTF3, e=1, en= True )
+    cmds.textField( footTF4, e=1, en= True )
+    cmds.textField( footTF5, e=1, en= True )
+    cmds.textField( footTF6, e=1, en= True )
+    cmds.button( footB1, e=1, en= True )
+    cmds.button( footB2, e=1, en= True )
+    cmds.button( footB3, e=1, en= True )
+    cmds.button( footB4, e=1, en= True )
+    cmds.button( footB5, e=1, en= True )
+    cmds.button( footB6, e=1, en= True )
+# Reverse Foot Off
+def cReverseFootCBOff():
+    
+    cmds.textField( footTF1, e=1, en= False )
+    cmds.textField( footTF2, e=1, en= False )
+    cmds.textField( footTF3, e=1, en= False )
+    cmds.textField( footTF4, e=1, en= False )
+    cmds.textField( footTF5, e=1, en= False )
+    cmds.textField( footTF6, e=1, en= False )
+    cmds.button( footB1, e=1, en= False )
+    cmds.button( footB2, e=1, en= False )
+    cmds.button( footB3, e=1, en= False )
+    cmds.button( footB4, e=1, en= False )
+    cmds.button( footB5, e=1, en= False )
+    cmds.button( footB6, e=1, en= False )
+
+# Main Setup Function
+def cSetup():            
+    
+    # Setup Head
+    h= CH.HeadSetup_Cl()
+    neckJnt= cmds.textField( headTF1, q=1, tx=1 )
+    headJnt= cmds.textField( headTF2, q=1, tx=1 )
+    lEyeJnt= cmds.textField( headTF3, q=1, tx=1 )
+    rEyeJnt= cmds.textField( headTF4, q=1, tx=1 )
+    if cmds.checkBox( cb1, q=1, v=1 )== True:
+        if 'neck' in str(neckJnt):
+            if 'head' in str(headJnt):
+                if 'eye' in str(lEyeJnt):
+                    if 'eye' in str(rEyeJnt):
+                        head= h.headSetup_Fn( neckJnt, headJnt, lEyeJnt, rEyeJnt, 'head' )
+                    else:
+                        cmds.warning( 'Invalid Right Eye Joint!' )
+                else:
+                    cmds.warning( 'Invalid Left Eye Joint!' )
+            else:
+                cmds.warning( 'Invalid Head Joint!' )
+        else:
+            cmds.warning( 'Invalid Neck Joint!' )
+    else:
+        pass
+    
+    # Setup Mouth
+    jawJnt= cmds.textField( mouthTF0, q=1, tx=1 )
+    tongueJnt= cmds.textField( mouthTF1, q=1, tx=1 )
+    upTeethJnt= cmds.textField( mouthTF2, q=1, tx=1 )
+    dnTeethJnt= cmds.textField( mouthTF3, q=1, tx=1 )
+    if cmds.checkBox( cb2, q=1, v=1 )== True:
+        if 'jaw' in str(jawJnt):
+            if 'tongue' in str(tongueJnt):
+                if 'teeth' in str(upTeethJnt):
+                    if 'teeth' in str(dnTeethJnt):
+                        mouth= h.mouthSetup_Fn( jawJnt, tongueJnt, upTeethJnt, dnTeethJnt, 'mouth' )
+                    else:
+                        cmds.warning( 'Invalid Lower Teeth Joint!' )
+                else:
+                    cmds.warning( 'Invalid Upper Teeth Joint!' )
+            else:
+                cmds.warning( 'Invalid Tongue Joint!' )
+        else:
+            cmds.warning( 'Invalid Jaw Joint!' )
+    else:
+        pass
+        
+    # Setup Spine
+    spineJnt= cmds.textField( spineTF1, q=1, tx=1 )
+    if cmds.checkBox( cb3, q=1, v=1 )== True:
+        if 'spine' in str(spineJnt):
+            spine= CS.SpineSetup_Cl(spineJnt, 'spine')
+        else:
+            cmds.warning( 'Invalid Spine Joint!' )
+    else:
+        pass
+    
+    # Setup Arm
+    
+    #a=
+    
+    # Finalize Rig
+    b= CB.BasicSetup_Cl()
+    pelvisJnt= cmds.textField( spineTF0, q=1, tx=1 )
+    chestJnt= cmds.textField( spineTF2, q=1, tx=1 )
+    rootJnt= cmds.textField( rootTF1, q=1, tx=1 )
+            
+    if cmds.checkBox( cb1, q=1, v=1 )== True:
+        if cmds.checkBox( cb3, q=1, v=1 )== True:
+            if cmds.checkBoxGrp( cbG1, q=1, v1=1 )== True:
+                if cmds.checkBoxGrp( cbG3, q=1, v1=1 )== True:
+                    if 'chest' in str( chestJnt ):
+                        if 'pelvis' in str( pelvisJnt ):
+                            if 'root' in str( rootJnt ):
+                                basic= b.cBasicSetup_Fn( rootJnt, pelvisJnt, chestJnt, 'BasicSetup' )
+                            else:
+                                cmds.warning( 'Invalid Root Joint!' )
+                        else:
+                            cmds.warning( 'Invalid Pelvis Joint!' )
+                    else:
+                            cmds.warning( 'Invalid Chest Joint!' )
+                else:
+                    pass
+
+    
         
 AutoRigUI_Fn()
