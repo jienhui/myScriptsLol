@@ -1,16 +1,19 @@
 import maya.cmds as cmds
+import cCtrlHrc_Cl as CC
 
 # IK/FK leg setup
 
-class LegAutoRig_Cl():
-    def __init__( self, jnt, feetJntList, name ):
-        self.jnt= jnt
-        self.name= name
-        self.feetJntList= feetJntList
-        self.cLegAutoRig_Fn()
+class cLegSetup_Cl():
+    def __init__( self ):
+        
+        global c
+        c= CC.CCtrlHrc_Cl()
         
     # Main IK/FK arm Setup Function
-    def cLegAutoRig_Fn(self):
+    def cLegSetup_Fn(self, jnt, name ):
+        
+        self.jnt= jnt
+        self.name= name
         
     # Identify & Creating Driven Joint Set Function
         cmds.select( self.jnt , hi=1 )
@@ -423,20 +426,26 @@ class LegAutoRig_Cl():
         cmds.connectAttr( '%s.outputX' % ctrlMD, '%s.ry' % aimUp )
         cmds.hide( self.distLoc1, loc2 )
         
-    # Foot Setup
-        self.cFootSetup_Fn()
+        return [ self.fkCtrlSpaceList[0], self.ikCtrlGrp, self.locGrp, self.aimLocGrp, self.distLoc1[0], self.ikJntSel, self.ikH[0], self.ikCtrl ]
         
-    def cFootSetup_Fn(self):
+    # Foot Setup      
+    def cFootSetup_Fn(self, legIKCtrl, legIkH, legIkJntSel, heelJnt, ballJnt, toeJnt, toeTipJnt, sideRJnt, sideLJnt, side ):
+        
+        self.legIKCtrl= legIKCtrl
+        self.legIkH= legIkH
+        self.legIkJntSel = legIkJntSel
+        self.feetJntList= [ heelJnt, ballJnt, toeJnt, toeTipJnt, sideRJnt, sideLJnt ]
+        self.side= side
         
         # Create Feet IK Handles
-        ballIKH= cmds.ikHandle( n= str(self.ikJntSel[3]).replace( '01_IK_drv', '_ikH' ) , sj= self.ikJntSel[2], ee=self.ikJntSel[3], sol= 'ikSCsolver', p=1, w=1 )
-        toeIKH= cmds.ikHandle( n= str(self.ikJntSel[4]).replace( '01_IK_drv', '_ikH' ) , sj= self.ikJntSel[3], ee=self.ikJntSel[4], sol= 'ikSCsolver', p=1, w=1 )
+        ballIKH= cmds.ikHandle( n= str(self.legIkJntSel[3]).replace( '01_IK_drv', '_ikH' ) , sj= self.legIkJntSel[2], ee=self.legIkJntSel[3], sol= 'ikSCsolver', p=1, w=1 )
+        toeIKH= cmds.ikHandle( n= str(self.legIkJntSel[4]).replace( '01_IK_drv', '_ikH' ) , sj= self.legIkJntSel[3], ee=self.legIkJntSel[4], sol= 'ikSCsolver', p=1, w=1 )
                 
         # Create Locators
         feetLocList= []
         for each in self.feetJntList:
             feetLoc= cmds.spaceLocator( n= str(each).replace( '_jnt', '_loc' ) )
-            feetLocList.append( feetLoc )
+            feetLocList.append( feetLoc[0] )
             tmpCnst= cmds.parentConstraint( each, feetLoc, mo=0 )
             cmds.delete( tmpCnst )
         tmpCnst= cmds.pointConstraint( feetLocList[1], feetLocList[2], mo=0 )
@@ -444,32 +453,37 @@ class LegAutoRig_Cl():
         
         # Parent Locator
         cmds.parent( toeIKH[0], feetLocList[2] )
-        cmds.parent( self.ikH[0], ballIKH[0], feetLocList[2], feetLocList[1] )
+        cmds.parent( self.legIkH, ballIKH[0], feetLocList[2], feetLocList[1] )
         cmds.parent( feetLocList[2], feetLocList[1], feetLocList[5] )
         cmds.parent( feetLocList[5], feetLocList[4] )
         cmds.parent( feetLocList[4], feetLocList[3] )
         cmds.parent( feetLocList[3], feetLocList[0] )
-        self.feetLocGrp= cmds.group( n= '%s_feet_locGrp' % self.jnt[0], em=1 )
-        tmpCnst= cmds.parentConstraint( self.ikJntSel[3], self.feetLocGrp, mo=0 )
+        self.feetLocGrp= cmds.group( n= '%s_feet_locGrp' % self.side, em=1 )
+        tmpCnst= cmds.parentConstraint( self.legIkJntSel[3], self.feetLocGrp, mo=0 )
         cmds.delete( tmpCnst )
         cmds.parent( feetLocList[0], self.feetLocGrp )
-        cmds.parentConstraint( self.ikCtrl, self.feetLocGrp, mo=1 )
+        cmds.parentConstraint( self.legIKCtrl, self.feetLocGrp, mo=1 )
         
         # Connect Attributes
-        cmds.connectAttr( '%s.raiseHeel' % self.ikCtrl, '%s.rz' % feetLocList[0][0] )
-        cmds.connectAttr( '%s.heelSwivel' % self.ikCtrl, '%s.ry' % feetLocList[0][0] )
-        cmds.connectAttr( '%s.raiseBall' % self.ikCtrl, '%s.rz' % feetLocList[1][0] )
-        cmds.connectAttr( '%s.ballSwivel' % self.ikCtrl, '%s.ry' % feetLocList[1][0] )
-        cmds.connectAttr( '%s.raiseToe' % self.ikCtrl, '%s.rz' % feetLocList[2][0] )
-        cmds.connectAttr( '%s.raiseToeTip' % self.ikCtrl, '%s.rz' % feetLocList[3][0] )
-        cmds.connectAttr( '%s.swivel' % self.ikCtrl, '%s.ry' % feetLocList[3][0] )
-        cmds.connectAttr( '%s.sideR' % self.ikCtrl, '%s.rx' % feetLocList[4][0] )
-        cmds.connectAttr( '%s.sideL' % self.ikCtrl, '%s.rx' % feetLocList[5][0] )
+        cmds.connectAttr( '%s.raiseHeel' % self.legIKCtrl, '%s.rz' % feetLocList[0] )
+        cmds.connectAttr( '%s.heelSwivel' % self.legIKCtrl, '%s.ry' % feetLocList[0] )
+        cmds.connectAttr( '%s.raiseBall' % self.legIKCtrl, '%s.rz' % feetLocList[1] )
+        cmds.connectAttr( '%s.ballSwivel' % self.legIKCtrl, '%s.ry' % feetLocList[1] )
+        cmds.connectAttr( '%s.raiseToe' % self.legIKCtrl, '%s.rz' % feetLocList[2] )
+        cmds.connectAttr( '%s.raiseToeTip' % self.legIKCtrl, '%s.rz' % feetLocList[3] )
+        cmds.connectAttr( '%s.swivel' % self.legIKCtrl, '%s.ry' % feetLocList[3] )
+        cmds.connectAttr( '%s.sideR' % self.legIKCtrl, '%s.rx' % feetLocList[4] )
+        cmds.connectAttr( '%s.sideL' % self.legIKCtrl, '%s.rx' % feetLocList[5] )
         cmds.hide( self.feetLocGrp )
-        cmds.parent( self.feetLocGrp, self.locGrp )
+        #cmds.parent( self.feetLocGrp, self.locGrp )
         
         
-        return [ self.fkCtrlSpaceList[0], self.ikCtrlGrp, self.locGrp, self.aimLocGrp, self.distLoc1[0] ]
+        return [ self.feetLocGrp ]
         
 if __name__ == '__main__':
-    abc= LegAutoRig_Cl( 'l_hip01_jnt',['l_heel_jnt', 'l_ball01_jnt', 'l_toe01_jnt', 'l_toeTip_jnt', 'l_sideR_jnt', 'l_sideL_jnt'], 'leg' )
+    LS= cLegSetup_Cl()
+    l= LS.cLegSetup_Fn( 'l_hip01_jnt', 'leg' )
+    legIKCtrl= LS.ikCtrl
+    legIkH= LS.ikH[0]
+    legIkJntSel= LS.ikJntSel
+    r= LS.cFootSetup_Fn( legIKCtrl, legIkH, legIkJntSel,'l_heels_jnt', 'l_ball01_jnt', 'l_toe01_jnt', 'l_toeTip_jnt', 'l_sideR_jnt', 'l_sideL_jnt', 'l' )
