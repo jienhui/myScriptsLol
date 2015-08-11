@@ -3,16 +3,16 @@ import cCtrlHrc_Cl as CC
 
 # IK/FK arm setup
 
-class ArmAutoRig_Cl():
-    def __init__( self, jnt, clavicle, fingerJntList, name  ):
-        self.jnt= jnt
-        self.clavicle= clavicle
-        self.fingerJntList=  fingerJntList
-        self.name= name
-        self.cArmAutoRig_Fn()
+class cArmSetup_Cl( object ):
+    def __init__( self ):
+        global c
+        c= CC.CCtrlHrc_Cl()
         
     # Main IK/FK arm Setup Function
-    def cArmAutoRig_Fn( self):    
+    def cArmSetup_Fn( self, jnt, clavicle, name ):
+        self.jnt= jnt
+        self.clavicle= clavicle
+        self.name= name
         
     # Identify & Creating Driven Joint Set Function
         cmds.select( self.jnt , hi=1 )
@@ -55,12 +55,8 @@ class ArmAutoRig_Cl():
         pvPos= -( armLen/2 )
         cmds.setAttr( '%s.tz' % self.pvLocGrp, pvPos )
         cmds.parent( self.pvLocGrp, w=1 )
-        cmds.hide( self.pvLocGrp )      
-        
-    # Create IK/FK Switch Controller & Blending IK/FK driven joints Funtion
-        self.cIkFkSwitch_Fn()
-        
-    def cIkFkSwitch_Fn(self):
+        cmds.hide( self.pvLocGrp )
+        cmds.select(cl=1)     
 
         # Create IK/FK Switch Controller
         text= cmds.textCurves( ch=0, f='Times New Roman', t= 'IkFk' )        
@@ -110,7 +106,7 @@ class ArmAutoRig_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[0], '%s.inRotate1' % blnNode1 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[0], '%s.inTranslate2' % blnNode1 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[0], '%s.inRotate2' % blnNode1 )
-        pb01= cmds.rename( blnNode1, str(self.selJnt[0]) + '_PB01' )
+        cmds.rename( blnNode1, str(self.selJnt[0]) + '_PB01' )
         
         # pairBlend 02
         blnNode2= cmds.pairBlend( nd= self.selJnt[1], at=['tx','ty','tz','rx','ry','rz'] )
@@ -119,7 +115,7 @@ class ArmAutoRig_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[1], '%s.inRotate1' % blnNode2 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[1], '%s.inTranslate2' % blnNode2 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[1], '%s.inRotate2' % blnNode2 )
-        pb02= cmds.rename( blnNode2, str(self.selJnt[1]) + '_PB02' )
+        cmds.rename( blnNode2, str(self.selJnt[1]) + '_PB02' )
         
         # pairBlend 03
         blnNode3= cmds.pairBlend( nd= self.selJnt[2], at=['tx','ty','tz','rx','ry','rz'] )
@@ -128,13 +124,9 @@ class ArmAutoRig_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[2], '%s.inRotate1' % blnNode3 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[2], '%s.inTranslate2' % blnNode3 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[2], '%s.inRotate2' % blnNode3 )
-        pb01= cmds.rename( blnNode3, str(self.selJnt[2]) + '_PB03' )
+        cmds.rename( blnNode3, str(self.selJnt[2]) + '_PB03' )
         
-    # Setup FK Controller Function
-        self.cFkSetup_Fn()
-        
-    def cFkSetup_Fn(self):
-        
+    # Setup FK Controller Function        
         self.fkCtrlList=[]
         self.fkCtrlSpaceList= []
         
@@ -177,14 +169,11 @@ class ArmAutoRig_Cl():
         R01= cmds.createNode( 'reverse', n='fk_ctrl_vis_R01' )
         cmds.connectAttr( '%s.ikFkSwitch' % self.IKFKSwitch, '%s.inputX' % R01 )
         cmds.connectAttr( '%s.outputX' % R01, '%s.v' % self.fkCtrlSpaceList[0] )
+        cmds.select(cl=1)
         
     # Setup IK Controller Function
-        self.cIKSetup_Fn()
-        
-    def cIKSetup_Fn(self) :
-        
         # create IK Controller
-        self.extraAttrs = ['autoStretch', 'upperStretch', 'lowerStretch', 'kneeSlide']
+        self.extraAttrs = ['autoStretch', 'upperStretch', 'lowerStretch', 'elbowSlide']
         self.ikH= cmds.ikHandle( n= '%s_%s_ikHandle' % (self.jnt[0], self.name) , sj= self.ikJntSel[0], ee=self.ikJntSel[2], sol= 'ikRPsolver', p=1, w=1 )
         self.ikCtrl= cmds.curve( n= '%s_%s_IK_ctrl' % (self.jnt[0], self.name), d=1, 
         p=[(0.5,0.5,0.5),(0.5,0.5,-0.5),(-0.5,0.5,-0.5),(-0.5,-0.5,-0.5),(0.5,-0.5,-0.5),(0.5,0.5,-0.5),(-0.5,0.5,-0.5),(-0.5,0.5,0.5),(0.5,0.5,0.5),(0.5,-0.5,0.5),(0.5,-0.5,-0.5),(-0.5,-0.5,-0.5),(-0.5,-0.5,0.5),(0.5,-0.5,0.5),(-0.5,-0.5,0.5),(-0.5,0.5,0.5)] )
@@ -200,8 +189,8 @@ class ArmAutoRig_Cl():
         cmds.setAttr( '%s.upperStretch' % self.ikCtrl, e=1, l=False, k=True )
         cmds.addAttr( self.ikCtrl, ln='lowerStretch', at='float' )
         cmds.setAttr( '%s.lowerStretch' % self.ikCtrl, e=1, l=False, k=True )
-        cmds.addAttr( self.ikCtrl, ln='kneeSlide', at='float' )
-        cmds.setAttr( '%s.kneeSlide' % self.ikCtrl, e=1, l=False, k=True )
+        cmds.addAttr( self.ikCtrl, ln='elbowSlide', at='float' )
+        cmds.setAttr( '%s.elbowSlide' % self.ikCtrl, e=1, l=False, k=True )
         cmds.addAttr( self.ikCtrl, ln='twist', at='float' )
         cmds.setAttr( '%s.twist' % self.ikCtrl, e=1, l=False, k=True )
         cmds.connectAttr( '%s.twist' % self.ikCtrl, '%s.twist' % self.ikH[0] )
@@ -260,8 +249,7 @@ class ArmAutoRig_Cl():
         cmds.parentConstraint( self.clavicleC, self.aimLocGrp, mo=1 )
         
         
-        # Create Condition node
-        
+        # Create Condition node      
         # Aim Lock Condition
         aimLockCon= cmds.createNode( 'condition', n= '%s_%s_aimLock_con01' % (self.jnt[0], self.name) )
         cmds.connectAttr( '%s.follow' % self.pvCtrl, '%s.firstTerm' % str(aimLockCon) )
@@ -272,14 +260,14 @@ class ArmAutoRig_Cl():
         cmds.connectAttr( '%s.outColorR' % str(aimLockCon), str(aimFollow[0]) + '.%sW0' % self.ikCtrl )
         
         # Knee Lock Condition
-        kneeLockCon= cmds.createNode( 'condition', n= '%s_%s_kneeLock_con01' % (self.jnt[0], self.name) )
-        cmds.connectAttr( '%s.follow' % self.pvCtrl, str(kneeLockCon) + '.firstTerm' )
-        cmds.setAttr( '%s.operation' % str(kneeLockCon), 0 )
-        cmds.setAttr( '%s.secondTerm' % str(kneeLockCon), 2 )
-        cmds.setAttr( '%s.colorIfTrueR' % str(kneeLockCon), 0 )
-        cmds.setAttr( '%s.colorIfFalseR' % str(kneeLockCon), 1 )
-        cmds.setAttr( '%s.colorIfTrueG' % str(kneeLockCon), 1 )
-        cmds.setAttr( '%s.colorIfFalseG' % str(kneeLockCon), 0 )
+        elbowLockCon= cmds.createNode( 'condition', n= '%s_%s_elbowLock_con01' % (self.jnt[0], self.name) )
+        cmds.connectAttr( '%s.follow' % self.pvCtrl, str(elbowLockCon) + '.firstTerm' )
+        cmds.setAttr( '%s.operation' % str(elbowLockCon), 0 )
+        cmds.setAttr( '%s.secondTerm' % str(elbowLockCon), 2 )
+        cmds.setAttr( '%s.colorIfTrueR' % str(elbowLockCon), 0 )
+        cmds.setAttr( '%s.colorIfFalseR' % str(elbowLockCon), 1 )
+        cmds.setAttr( '%s.colorIfTrueG' % str(elbowLockCon), 1 )
+        cmds.setAttr( '%s.colorIfFalseG' % str(elbowLockCon), 0 )
        
         # Controller Follow Condition
         ctrlFollowCon= cmds.createNode( 'condition', n= '%s_%s_ctrlFollow_con01' % (self.jnt[0], self.name) )
@@ -290,9 +278,8 @@ class ArmAutoRig_Cl():
         cmds.setAttr( '%s.colorIfFalseR' % str(ctrlFollowCon), 0 )
         cmds.connectAttr( '%s.outColorR' % str(ctrlFollowCon), str(ctrlFollow[0]) + '.%sW0' % self.ikCtrl )
         
-        # Knee/elbow Lock setup
-       
-        connExtraAttrs = ['upperStretch', 'kneeSlide', 'lowerStretch']
+        # elbow/elbow Lock setup       
+        connExtraAttrs = ['upperStretch', 'elbowSlide', 'lowerStretch']
         self.ikLocList=[]
         self.ikLocGrpList=[]
         MD02List= []
@@ -320,17 +307,17 @@ class ArmAutoRig_Cl():
             cmds.hide( self.locGrp )            
         
         cmds.setAttr( '%s_MD01.input2X' % self.ikLocList[0][0], -0.1 )
-        kneeCnst= cmds.parentConstraint( self.ikLocList[0], self.ikLocList[2], self.ikLocGrpList[1], mo=1 )
+        elbowCnst= cmds.parentConstraint( self.ikLocList[0], self.ikLocList[2], self.ikLocGrpList[1], mo=1 )
         locFollow= cmds.parentConstraint( self.ikCtrl, self.ikLocList[1], mo=1 )
         ikFollow= cmds.parentConstraint( self.ikCtrl, self.ikLocGrpList[2], mo=1 )
         cogFollow= cmds.parentConstraint( self.ikJntSel[0], self.ikLocGrpList[0], mo=1 )
-        cmds.connectAttr( '%s.outColorR' % str(kneeLockCon), '%s.' % str(kneeCnst[0]) + '%sW0' % str(self.ikLocList[0][0]) )
-        cmds.connectAttr( '%s.outColorR' % str(kneeLockCon), '%s.' % str(kneeCnst[0]) + '%sW1' % str(self.ikLocList[2][0]) )
-        cmds.connectAttr( '%s.outColorG' % str(kneeLockCon), '%s.' % str(locFollow[0])+ '%sW0' % self.ikCtrl )
+        cmds.connectAttr( '%s.outColorR' % str(elbowLockCon), '%s.' % str(elbowCnst[0]) + '%sW0' % str(self.ikLocList[0][0]) )
+        cmds.connectAttr( '%s.outColorR' % str(elbowLockCon), '%s.' % str(elbowCnst[0]) + '%sW1' % str(self.ikLocList[2][0]) )
+        cmds.connectAttr( '%s.outColorG' % str(elbowLockCon), '%s.' % str(locFollow[0])+ '%sW0' % self.ikCtrl )
         bln01= cmds.createNode( 'blendColors', n= '%s_%s_BLN01' % (self.jnt[0], self.name) )
         cmds.connectAttr( '%s.autoStretch' % self.ikCtrl, '%s.blender' % str(bln01) )
-        cmds.connectAttr( '%s.outColorG' % str(kneeLockCon), '%s.color2R' % str(bln01) )
-        cmds.connectAttr( '%s.outColorG' % str(kneeLockCon), '%s.color2G' % str(bln01) )
+        cmds.connectAttr( '%s.outColorG' % str(elbowLockCon), '%s.color2R' % str(bln01) )
+        cmds.connectAttr( '%s.outColorG' % str(elbowLockCon), '%s.color2G' % str(bln01) )
         cmds.setAttr( str(bln01) + '.color1R', 1 )
         cmds.setAttr( str(bln01) + '.color1G', 1 )
         cmds.connectAttr( str( bln01) + '.outputR', str(ikFollow[0]) + '.%sW0' % self.ikCtrl )
@@ -402,124 +389,66 @@ class ArmAutoRig_Cl():
         cmds.hide( self.distLoc1, loc2 )
         cmds.parentConstraint( self.clavicleC, self.distLoc1[0], mo=1 )
         
+        return [ self.clavicleSpace, self.IKFKSpace, self.fkCtrlSpaceList[0], self.ikCtrlGrp, self.locGrp, self.aimHrc ]
+        
         # Hand Setup
-        self.cHandSetup_Fn()
+    def cThumbSetup_Fn( self, thumbJnt ):
         
-    def cHandSetup_Fn(self):
-        
-        c= CC.CCtrlHrc_Cl()
+        self.thumbJnt=  thumbJnt
         
         # Create Finger Controllers
         cmds.select( cl=1 )
         # Thumb List
-        cmds.select( self.fingerJntList[0], hi=1 )
+        cmds.select( self.thumbJnt, hi=1 )
         thumb= cmds.ls( sl=1 )
         if len(thumb) > 3 :
             thumb.remove( thumb[-1] )     
         cmds.select( cl=1 )
-        thumbCtrlList= []
-        thumbSpaceList=[]
+        self.thumbCtrlList= []
+        self.thumbSpaceList=[]
         # Thumb Ctrl
         for each in thumb:               
             thumbCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
-            thumbCtrlList.append( thumbCtrl[0] )
-            thumbSpaceList.append( thumbCtrl[-1] )
+            self.thumbCtrlList.append( thumbCtrl[0] )
+            self.thumbSpaceList.append( thumbCtrl[-1] )
             tmpCnst= cmds.parentConstraint( each, thumbCtrl[-1], mo=0 )
             cmds.delete( tmpCnst )
             cmds.xform( '%s.cv[*]' % thumbCtrl[0][0], ro= [0,90,0] )
             cmds.parentConstraint( thumbCtrl[0], each, mo=1 )
-        cmds.parent( thumbSpaceList[-1], thumbCtrlList[1] )
-        cmds.parent( thumbSpaceList[1], thumbCtrlList[0] )
+        cmds.parent( self.thumbSpaceList[-1], self.thumbCtrlList[1] )
+        cmds.parent( self.thumbSpaceList[1], self.thumbCtrlList[0] )
         
-        # Index List
-        cmds.select( self.fingerJntList[1], hi=1 )
-        index= cmds.ls( sl=1 )
-        if len(index) > 3 :
-            index.remove( index[-1] )     
+        return [ self.thumbCtrlList, self.thumbSpaceList ]
+        
+        # Finger Setup
+    def cFingerSetup_Fn(self, fingerJnt ):
+        
+        self.fingerJnt=  fingerJnt
+            
+        cmds.select( self.fingerJnt, hi=1 )
+        finger= cmds.ls( sl=1 )
+        if len(finger) > 4 :
+            finger.remove( finger[-1] )     
         cmds.select( cl=1 )
-        indexCtrlList= []
-        indexSpaceList=[]
+        self.fingerCtrlList= []
+        self.fingerSpaceList=[]
         # Index Ctrl
-        for each in index:               
-            indexCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
-            indexCtrlList.append( indexCtrl[0] )
-            indexSpaceList.append( indexCtrl[-1] )
-            tmpCnst= cmds.parentConstraint( each, indexCtrl[-1], mo=0 )
+        for each in finger:               
+            fingerCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
+            self.fingerCtrlList.append( fingerCtrl[0] )
+            self.fingerSpaceList.append( fingerCtrl[-1] )
+            tmpCnst= cmds.parentConstraint( each, fingerCtrl[-1], mo=0 )
             cmds.delete( tmpCnst )
-            cmds.xform( '%s.cv[*]' % indexCtrl[0][0], ro= [0,90,0] )
-            cmds.parentConstraint( indexCtrl[0], each, mo=1 )
-        cmds.parent( indexSpaceList[3], indexCtrlList[2] )
-        cmds.parent( indexSpaceList[2], indexCtrlList[1] )
-        cmds.parent( indexSpaceList[1], indexCtrlList[0] )
-             
-        # Middle List
-        cmds.select( self.fingerJntList[2], hi=1 )
-        middle= cmds.ls( sl=1 )
-        if len(middle) > 3 :
-            middle.remove( middle[-1] )     
-        cmds.select( cl=1 )
-        middleCtrlList= []
-        middleSpaceList=[]
-        # Middle Ctrl
-        for each in middle:               
-            middleCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
-            middleCtrlList.append( middleCtrl[0] )
-            middleSpaceList.append( middleCtrl[-1] )
-            tmpCnst= cmds.parentConstraint( each, middleCtrl[-1], mo=0 )
-            cmds.delete( tmpCnst )
-            cmds.xform( '%s.cv[*]' % middleCtrl[0][0], ro= [0,90,0] )
-            cmds.parentConstraint( middleCtrl[0], each, mo=1 )
-        cmds.parent( middleSpaceList[3], middleCtrlList[2] )
-        cmds.parent( middleSpaceList[2], middleCtrlList[1] )
-        cmds.parent( middleSpaceList[1], middleCtrlList[0] )
-        
-        # Ring List
-        cmds.select( self.fingerJntList[3], hi=1 )
-        ring= cmds.ls( sl=1 )
-        if len(ring) > 3 :
-            ring.remove( ring[-1] )     
-        cmds.select( cl=1 )
-        ringCtrlList= []
-        ringSpaceList=[]
-        # Ring Ctrl
-        for each in ring:               
-            ringCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
-            ringCtrlList.append( ringCtrl[0] )
-            ringSpaceList.append( ringCtrl[-1] )
-            tmpCnst= cmds.parentConstraint( each, ringCtrl[-1], mo=0 )
-            cmds.delete( tmpCnst )
-            cmds.xform( '%s.cv[*]' % ringCtrl[0][0], ro= [0,90,0] )
-            cmds.parentConstraint( ringCtrl[0], each, mo=1 )
-        cmds.parent( ringSpaceList[3], ringCtrlList[2] )
-        cmds.parent( ringSpaceList[2], ringCtrlList[1] )
-        cmds.parent( ringSpaceList[1], ringCtrlList[0] )
-        
-        # Pinky List
-        cmds.select( self.fingerJntList[4], hi=1 )
-        pinky= cmds.ls( sl=1 )
-        if len(pinky) > 3 :
-            pinky.remove( pinky[-1] )     
-        cmds.select( cl=1 )
-        pinkyCtrlList= []
-        pinkySpaceList=[]
-        # Pinky Ctrl
-        for each in pinky:               
-            pinkyCtrl= c.cCtrlHrc_Fn( str(each).split( '_jnt' )[0] )
-            pinkyCtrlList.append( pinkyCtrl[0] )
-            pinkySpaceList.append( pinkyCtrl[-1] )
-            tmpCnst= cmds.parentConstraint( each, pinkyCtrl[-1], mo=0 )
-            cmds.delete( tmpCnst )
-            cmds.xform( '%s.cv[*]' % pinkyCtrl[0][0], ro= [0,90,0] )
-            cmds.parentConstraint( pinkyCtrl[0], each, mo=1 )
-        cmds.parent( pinkySpaceList[3], pinkyCtrlList[2] )
-        cmds.parent( pinkySpaceList[2], pinkyCtrlList[1] )
-        cmds.parent( pinkySpaceList[1], pinkyCtrlList[0] )
-        self.handGrp= cmds.group( n='%s_hand_ctrlGrp' % self.jnt[0], em=1 )
-        cmds.parent( thumbSpaceList[0], indexSpaceList[0], middleSpaceList[0], ringSpaceList[0], pinkySpaceList[0], self.handGrp )
-        cmds.parentConstraint( self.selJnt[3], self.handGrp, mo=1 )
-             
+            cmds.xform( '%s.cv[*]' % fingerCtrl[0][0], ro= [0,90,0] )
+            cmds.parentConstraint( fingerCtrl[0], each, mo=1 )
+        cmds.parent( self.fingerSpaceList[3], self.fingerCtrlList[2] )
+        cmds.parent( self.fingerSpaceList[2], self.fingerCtrlList[1] )
+        cmds.parent( self.fingerSpaceList[1], self.fingerCtrlList[0] )          
                         
-        return [ self.clavicleSpace, self.IKFKSpace, self.fkCtrlSpaceList[0], self.ikCtrlGrp, self.handGrp, self.locGrp, self.aimHrc ]
+        return [ self.fingerCtrlList, self.fingerSpaceList ]
         
-#if __name__ == '__main__':
-#    abc= ArmAutoRig_Cl( 'l_shd01_jnt', 'l_clavicle01_jnt',[ 'l_thumb01_jnt', 'l_index00_jnt', 'l_middle00_jnt', 'l_ring00_jnt', 'l_pinky00_jnt'], 'arm' )
+if __name__ == '__main__':
+    CA= cArmSetup_Cl()
+    c= CA.cArmSetup_Fn( 'l_shoulder01_jnt', 'l_clavicle01_jnt', 'arm' )
+    t= CA.cThumbSetup_Fn( 'l_thumb01_jnt' )
+    i= CA.cFingerSetup_Fn( 'l_index01_jnt' )
