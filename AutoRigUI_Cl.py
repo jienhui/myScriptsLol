@@ -3,10 +3,11 @@ import maya.cmds as cmds
 import cCtrlHrc_Cl as CC
 import cNailCtrlHrc_Cl as CN
 import cBasicSetup_Cl as CB
-import ArmAutoRig_Cl as AA
+import cArmSetup_Cl as CA
 import cSpineSetup_Cl as CS
 import cHeadSetup_Cl as CH
-import LegAutoRig_Cl as LA
+import cLegSetup_Cl as CL
+reload( CL )
 import bendySetup_Cl as B
 
 # Proxy Bone Class
@@ -52,6 +53,8 @@ def AutoRigUI_Fn():
     global armTF2
     global armB2
     # Fingers Variables
+    global palmTF1
+    global palmB1
     global cbG2
     global fingerCb1
     global fingerTF1
@@ -122,7 +125,7 @@ def AutoRigUI_Fn():
     cmds.separator( h=5 )
     cmds.setParent('..')
     # Body UI
-    cmds.scrollLayout( h=570, cr=1, vst=0 )
+    cmds.scrollLayout( h=610, cr=1, vst=0 )
     cmds.columnLayout( adjustableColumn=True )
     # Head Setup
     FL1= cmds.frameLayout( label= 'Head', borderStyle= 'etchedOut', collapsable= 1 )
@@ -205,6 +208,11 @@ def AutoRigUI_Fn():
     cmds.text( 'Shoulder :' )
     armTF2= cmds.textField( placeholderText= 'Shoulder joint name' )
     armB2= cmds.button( label= 'Add', c= 'cArmAddName()' )
+    cmds.setParent('..')
+    cmds.rowLayout( numberOfColumns=3, adjustableColumn= 2 )
+    cmds.text( 'Palm        :' )
+    palmTF1= cmds.textField( placeholderText= 'Palm joint name' )
+    palmB1= cmds.button( label= 'Add', c= 'cPalmAddName()' )
     cmds.setParent('..')
     # Fingers
     FL5= cmds.frameLayout( label= 'Fingers', borderStyle= 'etchedOut', collapsable= 1, collapse=1 )
@@ -289,10 +297,10 @@ def AutoRigUI_Fn():
     cmds.setParent( '..' )
     cmds.showWindow( window )
     
-    tfList= [ headTF1, headTF2, headTF3, headTF4, mouthTF0, mouthTF1, mouthTF2, mouthTF3, rootTF1, spineTF0, spineTF1, spineTF2, armTF1, armTF2, fingerTF1, fingerTF2, fingerTF3, fingerTF4, fingerTF5, legTF1, footTF1, footTF2, footTF3, footTF4, footTF5, footTF6 ]
+    tfList= [ headTF1, headTF2, headTF3, headTF4, mouthTF0, mouthTF1, mouthTF2, mouthTF3, rootTF1, spineTF0, spineTF1, spineTF2, armTF1, armTF2, palmTF1, fingerTF1, fingerTF2, fingerTF3, fingerTF4, fingerTF5, legTF1, footTF1, footTF2, footTF3, footTF4, footTF5, footTF6 ]
     cbList= [ cb1, cb2, cb3, fingerCb1, fingerCb2, fingerCb3, fingerCb4, fingerCb5 ]
     cbGList= [ cbG1, cbG2, cbG3, cbG4 ]
-    bList= [ headB1, headB2, headB3, headB4, mouthB0, mouthB1, mouthB2, mouthB3, rootB1, spineB0, spineB1, spineB2, armB1, armB2, fingerB1, fingerB2, fingerB3, fingerB4, fingerB5, legB1, footB1, footB2, footB3, footB4, footB5, footB6 ]
+    bList= [ headB1, headB2, headB3, headB4, mouthB0, mouthB1, mouthB2, mouthB3, rootB1, spineB0, spineB1, spineB2, armB1, armB2, palmB1, fingerB1, fingerB2, fingerB3, fingerB4, fingerB5, legB1, footB1, footB2, footB3, footB4, footB5, footB6 ]
     FLList= [ FL1, FL2, FL3, FL4, FL5, FL6, FL7 ]
     
 # Reset Funtion
@@ -316,6 +324,18 @@ def cReset():
     cmds.frameLayout( FL5, e=1, collapse= 1 )
     cmds.frameLayout( FL6, e=1, collapse= 0 )
     cmds.frameLayout( FL7, e=1, collapse= 1 )
+    cHeadCBOn()
+    cMouthCBOn()
+    cSpineCBOn()
+    cArmCBOn()
+    cFingersCBOn()
+    cThumbCBOn()
+    cIndexCBOn()
+    cMiddleCBOn()
+    cRingCBOn()
+    cPinkyCBOn()
+    cLegCBOn()
+    cReverseFootCBOn()
         
 # Help Funtion
 def cHelpMenu():
@@ -419,6 +439,11 @@ def cArmAddName():
    
     selJnt= cmds.ls(sl=1)
     cmds.textField( armTF2, e=1, tx= str(selJnt[0]) )
+
+def cPalmAddName():
+   
+    selJnt= cmds.ls(sl=1)
+    cmds.textField( palmTF1, e=1, tx= str(selJnt[0]) )
 
 # Add Fingers Name Funtion
 def cThumbAddName():
@@ -526,6 +551,8 @@ def cGetName():
                     cmds.textField( armTF1, e=1 , tx= str(each))
             if 'shoulder' in str(each):
                     cmds.textField( armTF2, e=1 , tx= str(each))
+            if 'palm' in str(each):
+                    cmds.textField( palmTF1, e=1 , tx= str(each))
             if 'thumb' in str(each):
                     cmds.textField( fingerTF1, e=1 , tx= str(each))
             if 'index' in str(each):
@@ -638,15 +665,21 @@ def cArmCBOn():
     
     cmds.textField( armTF1, e=1, en= True )
     cmds.textField( armTF2, e=1, en= True )
+    cmds.textField( palmTF1, e=1, en= True )
     cmds.button( armB1, e=1, en= True )
     cmds.button( armB2, e=1, en= True )
+    cmds.button( palmB1, e=1, en= True )
+    cmds.checkBoxGrp( cbG1, e=1, v2= True, v3= True )
 # Arm Off
 def cArmCBOff():
     
     cmds.textField( armTF1, e=1, en= False )
     cmds.textField( armTF2, e=1, en= False )
+    cmds.textField( palmTF1, e=1, en= False )
     cmds.button( armB1, e=1, en= False )
     cmds.button( armB2, e=1, en= False )
+    cmds.button( palmB1, e=1, en= False )
+    cmds.checkBoxGrp( cbG1, e=1, v2= False, v3= False )
 # Finger On
 def cFingersCBOn():
     
@@ -665,6 +698,7 @@ def cFingersCBOn():
     cmds.checkBox( fingerCb3, e=1, en= True )
     cmds.checkBox( fingerCb4, e=1, en= True )
     cmds.checkBox( fingerCb5, e=1, en= True )
+    cmds.checkBoxGrp( cbG2, e=1, v2= True )
 # Finger Off
 def cFingersCBOff():
     
@@ -683,6 +717,7 @@ def cFingersCBOff():
     cmds.checkBox( fingerCb3, e=1, en= False )
     cmds.checkBox( fingerCb4, e=1, en= False )
     cmds.checkBox( fingerCb5, e=1, en= False )
+    cmds.checkBoxGrp( cbG2, e=1, v2= False )
 # Thumb On
 def cThumbCBOn():
     
@@ -738,11 +773,13 @@ def cLegCBOn():
     
     cmds.textField( legTF1, e=1, en= True )
     cmds.button( legB1, e=1, en= True )
+    cmds.checkBoxGrp( cbG3, e=1, v2= True, v3= True )
 # Leg Off
 def cLegCBOff():
     
     cmds.textField( legTF1, e=1, en= False )
     cmds.button( legB1, e=1, en= False )
+    cmds.checkBoxGrp( cbG3, e=1, v2= False, v3= False )
 # Reverse Foot On
 def cReverseFootCBOn():
     
@@ -758,6 +795,7 @@ def cReverseFootCBOn():
     cmds.button( footB4, e=1, en= True )
     cmds.button( footB5, e=1, en= True )
     cmds.button( footB6, e=1, en= True )
+    cmds.checkBoxGrp( cbG4, e=1, v2= True )
 # Reverse Foot Off
 def cReverseFootCBOff():
     
@@ -773,6 +811,7 @@ def cReverseFootCBOff():
     cmds.button( footB4, e=1, en= False )
     cmds.button( footB5, e=1, en= False )
     cmds.button( footB6, e=1, en= False )
+    cmds.checkBoxGrp( cbG4, e=1, v2= False )
 
 # Main Setup Function
 def cSetup():            
@@ -788,7 +827,7 @@ def cSetup():
             if 'head' in str(headJnt):
                 if 'eye' in str(lEyeJnt):
                     if 'eye' in str(rEyeJnt):
-                        head= h.headSetup_Fn( neckJnt, headJnt, lEyeJnt, rEyeJnt, 'head' )
+                        h.headSetup_Fn( neckJnt, headJnt, lEyeJnt, rEyeJnt, 'head' )
                     else:
                         cmds.warning( 'Invalid Right Eye Joint!' )
                 else:
@@ -810,7 +849,7 @@ def cSetup():
             if 'tongue' in str(tongueJnt):
                 if 'teeth' in str(upTeethJnt):
                     if 'teeth' in str(dnTeethJnt):
-                        mouth= h.mouthSetup_Fn( jawJnt, tongueJnt, upTeethJnt, dnTeethJnt, 'mouth' )
+                        h.mouthSetup_Fn( jawJnt, tongueJnt, upTeethJnt, dnTeethJnt, 'mouth' )
                     else:
                         cmds.warning( 'Invalid Lower Teeth Joint!' )
                 else:
@@ -826,18 +865,341 @@ def cSetup():
     spineJnt= cmds.textField( spineTF1, q=1, tx=1 )
     if cmds.checkBox( cb3, q=1, v=1 )== True:
         if 'spine' in str(spineJnt):
-            spine= CS.SpineSetup_Cl(spineJnt, 'spine')
+            CS.SpineSetup_Cl(spineJnt, 'spine')
         else:
             cmds.warning( 'Invalid Spine Joint!' )
     else:
         pass
     
-    # Setup Arm
+    # Setup Arm    
+    clavicleJnt= cmds.textField( armTF1, q=1, tx=1 )
+    shoulderJnt= cmds.textField( armTF2, q=1, tx=1 )
+     
+    if cmds.checkBoxGrp( cbG1, q=1, v1=1 )== True:
+        if 'clavicle' in str( clavicleJnt ):
+            if 'shoulder' in str( shoulderJnt ):
+                lArm= CA.cArmSetup_Cl()
+                lArm.cArmSetup_Fn( shoulderJnt, clavicleJnt, 'arm' )
+                if cmds.checkBoxGrp( cbG1, q=1, v2=1 )== True:
+                    # Setupp Bendy
+                    cmds.select( shoulderJnt, hi=1 )
+                    lArmJnt= cmds.ls(sl=1)
+                    # Get Joints Position
+                    l_arm_jnt01Pos= cmds.xform( lArmJnt[0], q= 1, t= 1, ws= 1 )
+                    l_arm_jnt02Pos= cmds.xform( lArmJnt[1], q= 1, t= 1, ws= 1 )
+                    l_arm_jnt03Pos= cmds.xform( lArmJnt[2], q= 1, t= 1, ws= 1 )
+                    # Get Middle Cv Position
+                    l_arm_crv01X= (l_arm_jnt01Pos[0] + l_arm_jnt02Pos[0])/2
+                    l_arm_crv01Y= (l_arm_jnt01Pos[1] + l_arm_jnt02Pos[1])/2
+                    l_arm_crv01Z= (l_arm_jnt01Pos[2] + l_arm_jnt02Pos[2])/2
+                    # Crv02
+                    l_arm_crv02X= (l_arm_jnt02Pos[0] + l_arm_jnt03Pos[0])/2
+                    l_arm_crv02Y= (l_arm_jnt02Pos[1] + l_arm_jnt03Pos[1])/2
+                    l_arm_crv02Z= (l_arm_jnt02Pos[2] + l_arm_jnt03Pos[2])/2
+                    l_arm_tmpCrv1= cmds.curve( d=2, p= [ l_arm_jnt01Pos, [l_arm_crv01X, l_arm_crv01Y, l_arm_crv01Z], l_arm_jnt02Pos ] )
+                    l_arm_upperCrv= cmds.rename( str(l_arm_tmpCrv1), 'l_upperArm_crv' )
+                    l_arm_upperCrvName= str(l_arm_upperCrv).split( '_crv' )
+                    l_arm_tmpCrv2= cmds.curve( d=2, p= [ l_arm_jnt02Pos, [l_arm_crv02X, l_arm_crv02Y, l_arm_crv02Z], l_arm_jnt03Pos ] )
+                    l_arm_lowerCrv= cmds.rename( str(l_arm_tmpCrv2), 'l_lowerArm_crv' )
+                    l_arm_lowerCrvName= str(l_arm_lowerCrv).split( '_crv' )
+                    # Create Bendy
+                    l_upperArmBendy= B.BendySetup_Cl( l_arm_upperCrv, l_arm_upperCrvName[0] )
+                    l_lowerArmBendy= B.BendySetup_Cl( l_arm_lowerCrv, l_arm_lowerCrvName[0] )
+                    # Clean Up Bendy
+                    cmds.parentConstraint( lArmJnt[0], l_upperArmBendy.ctrlGrp, mo=1 )
+                    cmds.parentConstraint( lArmJnt[1], l_lowerArmBendy.ctrlGrp, mo=1 )
+                    cmds.connectAttr( '%s.rx' % lArmJnt[0], '%s.twist' % str(l_upperArmBendy.bendyCtrl03[0][0]) )
+                    cmds.connectAttr( '%s.rx' % lArmJnt[2], '%s.twist' % str(l_lowerArmBendy.bendyCtrl03[0][0]) )
+                else:
+                    pass
+                if cmds.checkBoxGrp( cbG1, q=1, v3=1 )== True:
+                    r_shoulderJnt= str(shoulderJnt).replace( 'l_', 'r_' )
+                    r_clavicleJnt= str(clavicleJnt).replace( 'l_', 'r_' )                 
+                    if 'r_shoulder' in r_shoulderJnt:
+                        if 'r_clavicle' in r_clavicleJnt:
+                            rArm= CA.cArmSetup_Cl()
+                            rArm.cArmSetup_Fn( r_shoulderJnt, r_clavicleJnt, 'arm' )
+                            if cmds.checkBoxGrp( cbG1, q=1, v2=1 )== True:
+                                # Setupp Bendy
+                                cmds.select( r_shoulderJnt, hi=1 )
+                                rArmJnt= cmds.ls(sl=1)
+                                # Get Joints Position
+                                r_arm_jnt01Pos= cmds.xform( rArmJnt[0], q= 1, t= 1, ws= 1 )
+                                r_arm_jnt02Pos= cmds.xform( rArmJnt[1], q= 1, t= 1, ws= 1 )
+                                r_arm_jnt03Pos= cmds.xform( rArmJnt[2], q= 1, t= 1, ws= 1 )
+                                # Get Middle Cv Position
+                                r_arm_crv01X= (r_arm_jnt01Pos[0] + r_arm_jnt02Pos[0])/2
+                                r_arm_crv01Y= (r_arm_jnt01Pos[1] + r_arm_jnt02Pos[1])/2
+                                r_arm_crv01Z= (r_arm_jnt01Pos[2] + r_arm_jnt02Pos[2])/2
+                                # Crv02
+                                r_arm_crv02X= (r_arm_jnt02Pos[0] + r_arm_jnt03Pos[0])/2
+                                r_arm_crv02Y= (r_arm_jnt02Pos[1] + r_arm_jnt03Pos[1])/2
+                                r_arm_crv02Z= (r_arm_jnt02Pos[2] + r_arm_jnt03Pos[2])/2
+                                r_arm_tmpCrv1= cmds.curve( d=2, p= [ r_arm_jnt01Pos, [r_arm_crv01X, r_arm_crv01Y, r_arm_crv01Z], r_arm_jnt02Pos ] )
+                                r_arm_upperCrv= cmds.rename( str(r_arm_tmpCrv1), 'r_upperArm_crv' )
+                                r_arm_upperCrvName= str(r_arm_upperCrv).split( '_crv' )
+                                r_arm_tmpCrv2= cmds.curve( d=2, p= [ r_arm_jnt02Pos, [r_arm_crv02X, r_arm_crv02Y, r_arm_crv02Z], r_arm_jnt03Pos ] )
+                                r_arm_lowerCrv= cmds.rename( str(r_arm_tmpCrv2), 'r_lowerArm_crv' )
+                                r_arm_lowerCrvName= str(r_arm_lowerCrv).split( '_crv' )
+                                # Create Bendy
+                                r_upperArmBendy= B.BendySetup_Cl( r_arm_upperCrv, r_arm_upperCrvName[0] )
+                                r_lowerArmBendy= B.BendySetup_Cl( r_arm_lowerCrv, r_arm_lowerCrvName[0] )
+                                # Clean Up Bendy
+                                cmds.parentConstraint( rArmJnt[0], r_upperArmBendy.ctrlGrp, mo=1 )
+                                cmds.parentConstraint( rArmJnt[1], r_lowerArmBendy.ctrlGrp, mo=1 )
+                                cmds.connectAttr( '%s.rx' % rArmJnt[0], '%s.twist' % str(r_upperArmBendy.bendyCtrl03[0][0]) )
+                                cmds.connectAttr( '%s.rx' % rArmJnt[2], '%s.twist' % str(r_lowerArmBendy.bendyCtrl03[0][0]) )
+                            else:
+                                pass
+                        else:
+                            cmds.warning( 'Invalid Right Clavicle Joint!' )
+                    else:
+                        cmds.warning( 'Invalid Right Shoulder Joint!' )
+                else:
+                    pass
+            else:
+                cmds.warning( 'Invalid Shoulder Joint!' )
+        else:
+            cmds.warning( 'Invalid Clavicle Joint!' )
+    else:
+        pass
     
-    #a=
+    # Setup Finger
+    palmJnt= cmds.textField( palmTF1, q=1, tx=1 )
+    r_palmJnt= str(palmJnt).replace( 'l_', 'r_' )
+    thumbJnt= cmds.textField( fingerTF1, q=1, tx=1 )
+    r_thumbJnt= str(thumbJnt).replace( 'l_', 'r_' )
+    indexJnt= cmds.textField( fingerTF2, q=1, tx=1 )
+    r_indexJnt= str(indexJnt).replace( 'l_', 'r_' )
+    middleJnt= cmds.textField( fingerTF3, q=1, tx=1 )
+    r_middleJnt= str(middleJnt).replace( 'l_', 'r_' )
+    ringJnt= cmds.textField( fingerTF4, q=1, tx=1 )
+    r_ringJnt= str(ringJnt).replace( 'l_', 'r_' )
+    pinkyJnt= cmds.textField( fingerTF5, q=1, tx=1 )
+    r_pinkyJnt= str(pinkyJnt).replace( 'l_', 'r_' )
+    
+    if cmds.checkBoxGrp( cbG2, q=1, v1=1 )== True:
+        a= CA.cArmSetup_Cl()
+        lFingerGrp= cmds.group( n='l_fingerCtrlGrp', em=1 )
+        tmpCnst= cmds.parentConstraint( palmJnt, lFingerGrp )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( palmJnt, lFingerGrp )
+        if cmds.checkBox( fingerCb1, q=1, v=1 )== True:
+            if 'thumb' in thumbJnt:
+                lThumb= a.cThumbSetup_Fn( thumbJnt )
+                cmds.parent( lThumb[1][0], lFingerGrp )
+            else:
+                cmds.warning( 'Invalid Thumb Joint!' )
+        else:
+            pass
+        if cmds.checkBox( fingerCb2, q=1, v=1 )== True:
+            if 'index' in indexJnt:
+                lIndex= a.cFingerSetup_Fn( indexJnt )
+                cmds.parent( lIndex[1][0], lFingerGrp )
+            else:
+                cmds.warning( 'Invalid Index Joint!' )
+        else:
+            pass
+        if cmds.checkBox( fingerCb3, q=1, v=1 )== True:
+            if 'middle' in middleJnt:
+                lMiddle= a.cFingerSetup_Fn( middleJnt )
+                cmds.parent( lMiddle[1][0], lFingerGrp )
+            else:
+                cmds.warning( 'Invalid Middle Joint!' )
+        else:
+            pass
+        if cmds.checkBox( fingerCb4, q=1, v=1 )== True:
+            if 'ring' in ringJnt:
+                lRing= a.cFingerSetup_Fn( ringJnt )
+                cmds.parent( lRing[1][0], lFingerGrp )
+            else:
+                cmds.warning( 'Invalid Ring Joint!' )
+        else:
+            pass
+        if cmds.checkBox( fingerCb5, q=1, v=1 )== True:
+            if 'pinky' in pinkyJnt:
+                lPinky= a.cFingerSetup_Fn( pinkyJnt )
+                cmds.parent( lPinky[1][0], lFingerGrp )
+            else:
+                cmds.warning( 'Invalid Pinky Joint!' )
+        else:
+            pass
+        if cmds.checkBoxGrp( cbG2, q=1, v2=1 )== True:
+            rFingerGrp= cmds.group( n='r_fingerCtrlGrp', em=1 )
+            tmpCnst= cmds.parentConstraint( r_palmJnt, rFingerGrp )
+            cmds.delete( tmpCnst )
+            cmds.parentConstraint( r_palmJnt, rFingerGrp )
+            if cmds.checkBox( fingerCb1, q=1, v=1 )== True:
+                if 'r_thumb' in r_thumbJnt:
+                    rThumb= a.cThumbSetup_Fn( thumbJnt.replace( 'l_', 'r_' ) )
+                    cmds.parent( rThumb[1][0], rFingerGrp )
+                else:
+                    cmds.warning( 'Invalid Right Thumb Joint!' )
+            else:
+                pass
+            if cmds.checkBox( fingerCb2, q=1, v=1 )== True:
+                if 'r_index' in r_indexJnt:
+                    rIndex= a.cFingerSetup_Fn( indexJnt.replace( 'l_', 'r_' ) )
+                    cmds.parent( rIndex[1][0], rFingerGrp )
+                else:
+                    cmds.warning( 'Invalid Right Index Joint!' )
+            else:
+                pass
+            if cmds.checkBox( fingerCb3, q=1, v=1 )== True:
+                if 'r_middle' in r_middleJnt:
+                    rMiddle= a.cFingerSetup_Fn( middleJnt.replace( 'l_', 'r_' ) )
+                    cmds.parent( rMiddle[1][0], rFingerGrp )
+                else:
+                    cmds.warning( 'Invalid Right Middle Joint!' )
+            else:
+                pass
+            if cmds.checkBox( fingerCb4, q=1, v=1 )== True:
+                if 'r_ring' in r_ringJnt:
+                    rRing= a.cFingerSetup_Fn( ringJnt.replace( 'l_', 'r_' ) )
+                    cmds.parent( rRing[1][0], rFingerGrp )
+                else:
+                    cmds.warning( 'Invalid Right Ring Joint!' )
+            else:
+                pass
+            if cmds.checkBox( fingerCb5, q=1, v=1 )== True:
+                if 'r_pinky' in r_pinkyJnt:
+                    rPinky= a.cFingerSetup_Fn( pinkyJnt.replace( 'l_', 'r_' ) )
+                    cmds.parent( rPinky[1][0], rFingerGrp )
+                else:
+                        cmds.warning( 'Invalid Right Pinky Joint!' )
+    else:
+        pass
+        
+    # Setup Leg
+    lLeg= CL.cLegSetup_Cl()
+    hipJnt= cmds.textField( legTF1, q=1, tx=1 )
+    r_hipJnt= str(hipJnt).replace( 'l_', 'r_' )
+    
+    if cmds.checkBoxGrp( cbG3, q=1, v1=1 )== True:
+        if 'hip' in str( hipJnt ):
+            lLeg.cLegSetup_Fn( hipJnt, 'leg' )
+            if cmds.checkBoxGrp( cbG3, q=1, v2=1 )== True:
+                # Setupp Bendy
+                cmds.select( hipJnt, hi=1 )
+                lLegJnt= cmds.ls(sl=1)
+                # Get Joints Position
+                l_leg_jnt01Pos= cmds.xform( lLegJnt[0], q= 1, t= 1, ws= 1 )
+                l_leg_jnt02Pos= cmds.xform( lLegJnt[1], q= 1, t= 1, ws= 1 )
+                l_leg_jnt03Pos= cmds.xform( lLegJnt[2], q= 1, t= 1, ws= 1 )
+                # Get Middle Cv Position
+                l_leg_crv01X= (l_leg_jnt01Pos[0] + l_leg_jnt02Pos[0])/2
+                l_leg_crv01Y= (l_leg_jnt01Pos[1] + l_leg_jnt02Pos[1])/2
+                l_leg_crv01Z= (l_leg_jnt01Pos[2] + l_leg_jnt02Pos[2])/2
+                # Crv02
+                l_leg_crv02X= (l_leg_jnt02Pos[0] + l_leg_jnt03Pos[0])/2
+                l_leg_crv02Y= (l_leg_jnt02Pos[1] + l_leg_jnt03Pos[1])/2
+                l_leg_crv02Z= (l_leg_jnt02Pos[2] + l_leg_jnt03Pos[2])/2
+                l_leg_tmpCrv1= cmds.curve( d=2, p= [ l_leg_jnt01Pos, [l_leg_crv01X, l_leg_crv01Y, l_leg_crv01Z], l_leg_jnt02Pos ] )
+                l_leg_upperCrv= cmds.rename( str(l_leg_tmpCrv1), 'l_upperLeg_crv' )
+                l_leg_upperCrvName= str(l_leg_upperCrv).split( '_crv' )
+                l_leg_tmpCrv2= cmds.curve( d=2, p= [ l_leg_jnt02Pos, [l_leg_crv02X, l_leg_crv02Y, l_leg_crv02Z], l_leg_jnt03Pos ] )
+                l_leg_lowerCrv= cmds.rename( str(l_leg_tmpCrv2), 'l_lowerLeg_crv' )
+                l_leg_lowerCrvName= str(l_leg_lowerCrv).split( '_crv' )
+                # Create Bendy
+                l_upperLegBendy= B.BendySetup_Cl( l_leg_upperCrv, l_leg_upperCrvName[0] )
+                l_lowerLegBendy= B.BendySetup_Cl( l_leg_lowerCrv, l_leg_lowerCrvName[0] )
+                # Clean Up Bendy
+                cmds.parentConstraint( lLegJnt[0], l_upperLegBendy.ctrlGrp, mo=1 )
+                cmds.parentConstraint( lLegJnt[1], l_lowerLegBendy.ctrlGrp, mo=1 )
+                cmds.connectAttr( '%s.rx' % lLegJnt[0], '%s.twist' % str(l_upperLegBendy.bendyCtrl03[0][0]) )
+                cmds.connectAttr( '%s.rx' % lLegJnt[2], '%s.twist' % str(l_lowerLegBendy.bendyCtrl03[0][0]) )
+            else:
+                pass
+            if cmds.checkBoxGrp( cbG3, q=1, v3=1 )== True:               
+                if 'r_hip' in r_hipJnt:
+                    rLeg= CL.cLegSetup_Cl()
+                    rLeg.cLegSetup_Fn( r_hipJnt, 'leg' )
+                    if cmds.checkBoxGrp( cbG3, q=1, v2=1 )== True:
+                        # Setupp Bendy
+                        cmds.select( r_hipJnt, hi=1 )
+                        rLegJnt= cmds.ls(sl=1)
+                        # Get Joints Position
+                        r_leg_jnt01Pos= cmds.xform( rLegJnt[0], q= 1, t= 1, ws= 1 )
+                        r_leg_jnt02Pos= cmds.xform( rLegJnt[1], q= 1, t= 1, ws= 1 )
+                        r_leg_jnt03Pos= cmds.xform( rLegJnt[2], q= 1, t= 1, ws= 1 )
+                        # Get Middle Cv Position
+                        r_leg_crv01X= (r_leg_jnt01Pos[0] + r_leg_jnt02Pos[0])/2
+                        r_leg_crv01Y= (r_leg_jnt01Pos[1] + r_leg_jnt02Pos[1])/2
+                        r_leg_crv01Z= (r_leg_jnt01Pos[2] + r_leg_jnt02Pos[2])/2
+                        # Crv02
+                        r_leg_crv02X= (r_leg_jnt02Pos[0] + r_leg_jnt03Pos[0])/2
+                        r_leg_crv02Y= (r_leg_jnt02Pos[1] + r_leg_jnt03Pos[1])/2
+                        r_leg_crv02Z= (r_leg_jnt02Pos[2] + r_leg_jnt03Pos[2])/2
+                        r_leg_tmpCrv1= cmds.curve( d=2, p= [ r_leg_jnt01Pos, [r_leg_crv01X, r_leg_crv01Y, r_leg_crv01Z], r_leg_jnt02Pos ] )
+                        r_leg_upperCrv= cmds.rename( str(r_leg_tmpCrv1), 'r_upperLeg_crv' )
+                        r_leg_upperCrvName= str(r_leg_upperCrv).split( '_crv' )
+                        r_leg_tmpCrv2= cmds.curve( d=2, p= [ r_leg_jnt02Pos, [r_leg_crv02X, r_leg_crv02Y, r_leg_crv02Z], r_leg_jnt03Pos ] )
+                        r_leg_lowerCrv= cmds.rename( str(r_leg_tmpCrv2), 'r_lowerLeg_crv' )
+                        r_leg_lowerCrvName= str(r_leg_lowerCrv).split( '_crv' )
+                        # Create Bendy
+                        r_upperLegBendy= B.BendySetup_Cl( r_leg_upperCrv, r_leg_upperCrvName[0] )
+                        r_lowerLegBendy= B.BendySetup_Cl( r_leg_lowerCrv, r_leg_lowerCrvName[0] )
+                        # Clean Up Bendy
+                        cmds.parentConstraint( rLegJnt[0], r_upperLegBendy.ctrlGrp, mo=1 )
+                        cmds.parentConstraint( rLegJnt[1], r_lowerLegBendy.ctrlGrp, mo=1 )
+                        cmds.connectAttr( '%s.rx' % rLegJnt[0], '%s.twist' % str(r_upperLegBendy.bendyCtrl03[0][0]) )
+                        cmds.connectAttr( '%s.rx' % rLegJnt[2], '%s.twist' % str(r_lowerLegBendy.bendyCtrl03[0][0]) )
+                    else:
+                        pass
+                else:
+                    cmds.warning( 'Invalid Right Hip Joint!' )
+            else:
+                pass
+        else:
+            cmds.warning( 'Invalid Hip Joint!' )
+    else:
+        pass
+    
+    # Setup Reverse Foot
+    heelJnt= cmds.textField( footTF1, q=1, tx=1 )
+    ballJnt= cmds.textField( footTF2, q=1, tx=1 )
+    toeJnt= cmds.textField( footTF3, q=1, tx=1 )
+    toeTipJnt= cmds.textField( footTF4, q=1, tx=1 )
+    sideLJnt= cmds.textField( footTF5, q=1, tx=1 )
+    sideRJnt= cmds.textField( footTF6, q=1, tx=1 )
+    r_heelJnt= str(heelJnt).replace( 'l_', 'r_' )
+    r_ballJnt= str(ballJnt).replace( 'l_', 'r_' )
+    r_toeJnt= str(toeJnt).replace( 'l_', 'r_' )
+    r_toeTipJnt= str(toeTipJnt).replace( 'l_', 'r_' )
+    r_sideLJnt= str(sideLJnt).replace( 'l_', 'r_' )
+    r_sideRJnt= str(sideRJnt).replace( 'l_', 'r_' )
+    
+    if cmds.checkBoxGrp( cbG4, q=1, v1=1 )== True:
+        if 'heel' in heelJnt:
+            if 'ball' in ballJnt:
+                if 'toe' in toeJnt:
+                    if 'toeTip' in toeTipJnt:
+                        if 'sideL' in sideLJnt:
+                            if 'sideR' in sideRJnt:
+                                lFeet= CL.cLegSetup_Cl()
+                                lFeet.cFootSetup_Fn( lLeg.ikCtrl, lLeg.ikH[0], lLeg.ikJntSel, heelJnt, ballJnt, toeJnt, toeTipJnt, sideRJnt, sideLJnt, 'l' )
+                                cmds.parent( lFeet.feetLocGrp, lLeg.locGrp )
+                                if cmds.checkBoxGrp( cbG4, q=1, v2=1 )== True:
+                                    rFeet= CL.cLegSetup_Cl()
+                                    rFeet.cFootSetup_Fn( rLeg.ikCtrl, rLeg.ikH[0], rLeg.ikJntSel, r_heelJnt, r_ballJnt, r_toeJnt, r_toeTipJnt, r_sideRJnt, r_sideLJnt, 'r' )
+                                    cmds.parent( rFeet.feetLocGrp, rLeg.locGrp )
+                            else:
+                                cmds.warning( 'Invalid sideR Joint!' )
+                        else:
+                            cmds.warning( 'Invalid sideL Joint!' )
+                    else:
+                        cmds.warning( 'Invalid toeTip Joint!' )
+                else:
+                    cmds.warning( 'Invalid Toe Joint!' )
+            else:
+                cmds.warning( 'Invalid Ball Joint!' )
+        else:
+            cmds.warning( 'Invalid Heel Joint!' )
+    else:
+        pass
     
     # Finalize Rig
-    b= CB.BasicSetup_Cl()
+    basic= CB.BasicSetup_Cl()
     pelvisJnt= cmds.textField( spineTF0, q=1, tx=1 )
     chestJnt= cmds.textField( spineTF2, q=1, tx=1 )
     rootJnt= cmds.textField( rootTF1, q=1, tx=1 )
@@ -849,7 +1211,78 @@ def cSetup():
                     if 'chest' in str( chestJnt ):
                         if 'pelvis' in str( pelvisJnt ):
                             if 'root' in str( rootJnt ):
-                                basic= b.cBasicSetup_Fn( rootJnt, pelvisJnt, chestJnt, 'BasicSetup' )
+                                basic.cBasicSetup_Fn( rootJnt, pelvisJnt, chestJnt, 'BasicSetup' )
+                                # Clean Up Spine Setup
+                                if cmds.checkBox( cb3, q=1, v=1 )== True:
+                                    cmds.parent( basic.chestSpace, CS.fkCtrlList[-1] )
+                                    cmds.parent( CS.fkSpaceList[0], basic.rootCtrl )
+                                    cmds.parent( CS.drvJntGrp, spine.spineCrv, basic.extraGrp )
+                                    cmds.parent( CS.spineIK[0], basic.ikGrp )
+                                else:
+                                    pass
+                                # Clean Up Head Setup
+                                if cmds.checkBox( cb1, q=1, v=1 )== True:
+                                    cmds.parent( h.neckCtrl[-1], basic.chestCtrl )
+                                    cmds.parent( h.headSpace, h.mainEye[-1], basic.rootCtrl )
+                                    cmds.parent( h.neckIK[0], basic.ikGrp )
+                                    worldCnst1= cmds.parentConstraint( basic.moverCtrl, h.headSpace, mo=1 )
+                                    headReverse= cmds.createNode( 'reverse', n= 'head_eye_follow_R01' )
+                                    cmds.connectAttr( '%s.follow' % h.headCtrl, '%s.inputX' % headReverse )
+                                    cmds.connectAttr( '%s.outputX' % headReverse, str(worldCnst1[0]) + '.%sW1' % basic.moverCtrl[0] )
+                                    worldCnst2= cmds.parentConstraint( basic.moverCtrl, h.mainEye[-1], mo=1 )
+                                    cmds.connectAttr( '%s.follow' % h.mainEye[0][0], '%s.inputY' % headReverse )
+                                    cmds.connectAttr( '%s.outputX' % headReverse, str(worldCnst2[0]) + '.%sW1' % basic.moverCtrl[0] )
+                                    # Clean Up Mouth Setup
+                                    if cmds.checkBox( cb2, q=1, v=1 )== True:
+                                        cmds.parent( h.jawSpace, h.innerMouth, basic.rootCtrl )
+                                    else:
+                                        pass
+                                else:
+                                    pass
+                                # Clean Up Arm Setup
+                                if cmds.checkBoxGrp( cbG1, q=1, v1=1 )== True:
+                                    # Left Arm
+                                    cmds.parentConstraint( basic.chestCtrl, lArm.clavicleSpace, mo=1 )
+                                    cmds.parentConstraint( basic.chestCtrl, lArm.IKFKSpace, mo=1 )
+                                    cmds.parent( lArm.IKFKSpace, lArm.clavicleSpace, lArm.fkCtrlSpaceList[0], lArm.handGrp, basic.rootCtrl )
+                                    cmds.parent( lArm.ikCtrlGrp, basic.moverCtrl )
+                                    cmds.parent( lArm.locGrp, basic.extraGrp )
+                                    # Right Arm
+                                    if cmds.checkBoxGrp( cbG1, q=1, v3=1 )== True:
+                                        cmds.parentConstraint( basic.chestCtrl, rArm.clavicleSpace, mo=1 )
+                                        cmds.parentConstraint( basic.chestCtrl, rArm.IKFKSpace, mo=1 )
+                                        cmds.parent( rArm.IKFKSpace, rArm.clavicleSpace, rArm.fkCtrlSpaceList[0], rArm.handGrp, basic.rootCtrl )
+                                        cmds.parent( rArm.ikCtrlGrp, basic.moverCtrl )
+                                        cmds.parent( rArm.locGrp, basic.extraGrp )
+                                    else:
+                                        pass
+                                else:
+                                    pass
+                                # Clean Up Leg Setup
+                                if cmds.checkBoxGrp( cbG3, q=1, v1=1 )== True:
+                                    # Left Leg
+                                    cmds.parentConstraint( basic.pelvisCtrl, lLeg.aimLocGrp, mo=1 )
+                                    cmds.parentConstraint( basic.pelvisCtrl, lLeg.distLoc1[0], mo=1 )
+                                    cmds.parentConstraint( basic.pelvisCtrl, lLeg.IKFKSpace, mo=1 )
+                                    cmds.parentConstraint( basic.pelvisCtrl, lLeg.aimHrc, mo=1 )
+                                    cmds.parentConstraint( basic.pelvisCtrl, lLeg.fkCtrlSpaceList[0], mo=1 )
+                                    cmds.parent( lLeg.IKFKSpace, lLeg.fkCtrlSpaceList[0], basic.rootCtrl )
+                                    cmds.parent( lLeg.ikCtrlGrp, basic.moverCtrl )
+                                    cmds.parent( lLeg.locGrp, basic.extraGrp )
+                                    # Right Leg
+                                    if cmds.checkBoxGrp( cbG3, q=1, v3=1 )== True:
+                                        cmds.parentConstraint( basic.pelvisCtrl, rLeg.aimLocGrp, mo=1 )
+                                        cmds.parentConstraint( basic.pelvisCtrl, rLeg.distLoc1[0], mo=1 )
+                                        cmds.parentConstraint( basic.pelvisCtrl, rLeg.IKFKSpace, mo=1 )
+                                        cmds.parentConstraint( basic.pelvisCtrl, rLeg.aimHrc, mo=1 )
+                                        cmds.parentConstraint( basic.pelvisCtrl, rLeg.fkCtrlSpaceList[0], mo=1 )
+                                        cmds.parent( rLeg.IKFKSpace, rLeg.fkCtrlSpaceList[0], basic.rootCtrl )
+                                        cmds.parent( rLeg.ikCtrlGrp, basic.moverCtrl )
+                                        cmds.parent( rLeg.locGrp, basic.extraGrp )
+                                    else:
+                                        pass
+                                else:
+                                    pass
                             else:
                                 cmds.warning( 'Invalid Root Joint!' )
                         else:
