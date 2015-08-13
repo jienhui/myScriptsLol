@@ -865,7 +865,7 @@ def cSetup():
     spineJnt= cmds.textField( spineTF1, q=1, tx=1 )
     if cmds.checkBox( cb3, q=1, v=1 )== True:
         if 'spine' in str(spineJnt):
-            CS.SpineSetup_Cl(spineJnt, 'spine')
+            spine= CS.SpineSetup_Cl(spineJnt, 'spine')
         else:
             cmds.warning( 'Invalid Spine Joint!' )
     else:
@@ -1214,17 +1214,16 @@ def cSetup():
                                 basic.cBasicSetup_Fn( rootJnt, pelvisJnt, chestJnt, 'BasicSetup' )
                                 # Clean Up Spine Setup
                                 if cmds.checkBox( cb3, q=1, v=1 )== True:
-                                    cmds.parent( basic.chestSpace, CS.fkCtrlList[-1] )
-                                    cmds.parent( CS.fkSpaceList[0], basic.rootCtrl )
-                                    cmds.parent( CS.drvJntGrp, spine.spineCrv, basic.extraGrp )
-                                    cmds.parent( CS.spineIK[0], basic.ikGrp )
+                                    cmds.parent( basic.chestSpace, spine.fkCtrlList[-1] )
+                                    cmds.parent( spine.fkSpaceList[0], basic.rootCtrl )
+                                    cmds.parent( spine.drvJntGrp, spine.spineCrv, basic.extraGrp )
+                                    cmds.parent( spine.spineIK[0], basic.ikGrp )
                                 else:
                                     pass
                                 # Clean Up Head Setup
                                 if cmds.checkBox( cb1, q=1, v=1 )== True:
                                     cmds.parent( h.neckCtrl[-1], basic.chestCtrl )
                                     cmds.parent( h.headSpace, h.mainEye[-1], basic.rootCtrl )
-                                    cmds.parent( h.neckIK[0], basic.ikGrp )
                                     worldCnst1= cmds.parentConstraint( basic.moverCtrl, h.headSpace, mo=1 )
                                     headReverse= cmds.createNode( 'reverse', n= 'head_eye_follow_R01' )
                                     cmds.connectAttr( '%s.follow' % h.headCtrl, '%s.inputX' % headReverse )
@@ -1244,14 +1243,14 @@ def cSetup():
                                     # Left Arm
                                     cmds.parentConstraint( basic.chestCtrl, lArm.clavicleSpace, mo=1 )
                                     cmds.parentConstraint( basic.chestCtrl, lArm.IKFKSpace, mo=1 )
-                                    cmds.parent( lArm.IKFKSpace, lArm.clavicleSpace, lArm.fkCtrlSpaceList[0], lArm.handGrp, basic.rootCtrl )
+                                    cmds.parent( lArm.IKFKSpace, lArm.clavicleSpace, lArm.fkCtrlSpaceList[0], lFingerGrp, basic.rootCtrl )
                                     cmds.parent( lArm.ikCtrlGrp, basic.moverCtrl )
                                     cmds.parent( lArm.locGrp, basic.extraGrp )
                                     # Right Arm
                                     if cmds.checkBoxGrp( cbG1, q=1, v3=1 )== True:
                                         cmds.parentConstraint( basic.chestCtrl, rArm.clavicleSpace, mo=1 )
                                         cmds.parentConstraint( basic.chestCtrl, rArm.IKFKSpace, mo=1 )
-                                        cmds.parent( rArm.IKFKSpace, rArm.clavicleSpace, rArm.fkCtrlSpaceList[0], rArm.handGrp, basic.rootCtrl )
+                                        cmds.parent( rArm.IKFKSpace, rArm.clavicleSpace, rArm.fkCtrlSpaceList[0], rFingerGrp, basic.rootCtrl )
                                         cmds.parent( rArm.ikCtrlGrp, basic.moverCtrl )
                                         cmds.parent( rArm.locGrp, basic.extraGrp )
                                     else:
@@ -1279,6 +1278,114 @@ def cSetup():
                                         cmds.parent( rLeg.IKFKSpace, rLeg.fkCtrlSpaceList[0], basic.rootCtrl )
                                         cmds.parent( rLeg.ikCtrlGrp, basic.moverCtrl )
                                         cmds.parent( rLeg.locGrp, basic.extraGrp )
+                                    else:
+                                        pass
+                                # Clean Up Arm Bendy
+                                if cmds.checkBoxGrp( cbG1, q=1, v2=1 )== True:
+                                    # Left UpperArm
+                                    lUpArm02Ctrl= cmds.duplicate( l_upperArmBendy.bendyCtrl02[0], n= str(l_upperArmBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                    lUpArm02Sdk= cmds.group( n= '%s_sdk' % lUpArm02Ctrl[0], em=1 )
+                                    cmds.group( n= '%s_align' % lUpArm02Ctrl[0], em=0 )
+                                    lUpArm02Space= cmds.group( n= '%s_space' % lUpArm02Ctrl[0], em=0 )
+                                    tmpCnst= cmds.parentConstraint( l_upperArmBendy.bendyCtrl02[0], lUpArm02Space, mo=0 )
+                                    cmds.delete( tmpCnst, lUpArm02Ctrl[1] )
+                                    cmds.parentConstraint( lArmJnt[0], lUpArm02Space, mo=1 )
+                                    cmds.parent( lUpArm02Ctrl[0], lUpArm02Sdk  )
+                                    cmds.connectAttr( '%s.t' % lUpArm02Ctrl[0], '%s.t' % l_upperArmBendy.bendyCtrl02[0][0] )
+                                    # Left LowerArm
+                                    lDnArm02Ctrl= cmds.duplicate( l_lowerArmBendy.bendyCtrl02[0], n= str(l_lowerArmBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                    lDnArm02Sdk= cmds.group( n= '%s_sdk' % lDnArm02Ctrl[0], em=1 )
+                                    cmds.group( n= '%s_align' % lDnArm02Ctrl[0], em=0 )
+                                    lDnArm02Space= cmds.group( n= '%s_space' % lDnArm02Ctrl[0], em=0 )
+                                    tmpCnst= cmds.parentConstraint( l_lowerArmBendy.bendyCtrl02[0], lDnArm02Space, mo=0 )
+                                    cmds.delete( tmpCnst, lDnArm02Ctrl[1] )
+                                    cmds.parentConstraint( lArmJnt[1], lDnArm02Space, mo=1 )
+                                    cmds.parent( lDnArm02Ctrl[0], lDnArm02Sdk  )
+                                    cmds.connectAttr( '%s.t' % lDnArm02Ctrl[0], '%s.t' % l_lowerArmBendy.bendyCtrl02[0][0] )
+                                    # Clean Up Left Arm Bendy
+                                    armSecondaryCtrlGrp= cmds.group( n= 'armScondary_ctrlGrp', em=1 )
+                                    cmds.parent( armSecondaryCtrlGrp, basic.rootCtrl ) 
+                                    cmds.parent( lUpArm02Space, lDnArm02Space, armSecondaryCtrlGrp )
+                                    bendyGrp= cmds.group( n='bendy_extraGrp', em=1 )
+                                    cmds.parent( l_upperArmBendy.mainGrp, l_lowerArmBendy.mainGrp, bendyGrp  )
+                                    cmds.parent( bendyGrp, basic.extraGrp )
+                                    if cmds.checkBoxGrp( cbG1, q=1, v3=1 )== True:
+                                        # Right UpperArm
+                                        rUpArm02Ctrl= cmds.duplicate( r_upperArmBendy.bendyCtrl02[0], n= str(r_upperArmBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                        rUpArm02Sdk= cmds.group( n= '%s_sdk' % rUpArm02Ctrl[0], em=1 )
+                                        cmds.group( n= '%s_align' % rUpArm02Ctrl[0], em=0 )
+                                        rUpArm02Space= cmds.group( n= '%s_space' % rUpArm02Ctrl[0], em=0 )
+                                        tmpCnst= cmds.parentConstraint( r_upperArmBendy.bendyCtrl02[0], rUpArm02Space, mo=0 )
+                                        cmds.delete( tmpCnst, rUpArm02Ctrl[1] )
+                                        cmds.parentConstraint( rArmJnt[0], rUpArm02Space, mo=1 )
+                                        cmds.parent( rUpArm02Ctrl[0], rUpArm02Sdk  )
+                                        cmds.connectAttr( '%s.t' % rUpArm02Ctrl[0], '%s.t' % r_upperArmBendy.bendyCtrl02[0][0] )
+                                        # Right LowerArm
+                                        rDnArm02Ctrl= cmds.duplicate( r_lowerArmBendy.bendyCtrl02[0], n= str(r_lowerArmBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                        rDnArm02Sdk= cmds.group( n= '%s_sdk' % rDnArm02Ctrl[0], em=1 )
+                                        cmds.group( n= '%s_align' % rDnArm02Ctrl[0], em=0 )
+                                        rDnArm02Space= cmds.group( n= '%s_space' % rDnArm02Ctrl[0], em=0 )
+                                        tmpCnst= cmds.parentConstraint( r_lowerArmBendy.bendyCtrl02[0], rDnArm02Space, mo=0 )
+                                        cmds.delete( tmpCnst, rDnArm02Ctrl[1] )
+                                        cmds.parentConstraint( rArmJnt[1], rDnArm02Space, mo=1 )
+                                        cmds.parent( rDnArm02Ctrl[0], rDnArm02Sdk  )
+                                        cmds.connectAttr( '%s.t' % rDnArm02Ctrl[0], '%s.t' % r_lowerArmBendy.bendyCtrl02[0][0] )
+                                        # Clean Up Right Arm Bendy 
+                                        cmds.parent( rUpArm02Space, rDnArm02Space, armSecondaryCtrlGrp )
+                                        cmds.parent( r_upperArmBendy.mainGrp, r_lowerArmBendy.mainGrp, bendyGrp  )
+                                    else:
+                                        pass
+                                # Clean Up Leg Bendy
+                                if cmds.checkBoxGrp( cbG3, q=1, v2=1 )== True:
+                                    # Left UpperLeg
+                                    lUpLeg02Ctrl= cmds.duplicate( l_upperLegBendy.bendyCtrl02[0], n= str(l_upperLegBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1  )
+                                    lUpLeg02Sdk= cmds.group( n= '%s_sdk' % lUpLeg02Ctrl[0], em=1 )
+                                    cmds.group( n= '%s_align' % lUpLeg02Ctrl[0], em=0 )
+                                    lUpLeg02Space= cmds.group( n= '%s_space' % lUpLeg02Ctrl[0], em=0 )
+                                    tmpCnst= cmds.parentConstraint( l_upperLegBendy.bendyCtrl02[0], lUpLeg02Space, mo=0 )
+                                    cmds.delete( tmpCnst, lUpLeg02Ctrl[1] )
+                                    cmds.parentConstraint( lLegJnt[0], lUpLeg02Space, mo=1 )
+                                    cmds.parent( lUpLeg02Ctrl[0], lUpLeg02Sdk  )
+                                    cmds.connectAttr( '%s.t' % lUpLeg02Ctrl[0], '%s.t' % l_upperLegBendy.bendyCtrl02[0][0] )
+                                    # Left LowerLeg
+                                    lDnLeg02Ctrl= cmds.duplicate( l_lowerLegBendy.bendyCtrl02[0], n= str(l_lowerLegBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                    lDnLeg02Sdk= cmds.group( n= '%s_sdk' % lDnLeg02Ctrl[0], em=1 )
+                                    cmds.group( n= '%s_align' % lDnLeg02Ctrl[0], em=0 )
+                                    lDnLeg02Space= cmds.group( n= '%s_space' % lDnLeg02Ctrl[0], em=0 )
+                                    tmpCnst= cmds.parentConstraint( l_lowerLegBendy.bendyCtrl02[0], lDnLeg02Space, mo=0 )
+                                    cmds.delete( tmpCnst, lDnLeg02Ctrl[1] )
+                                    cmds.parentConstraint( lLegJnt[1], lDnLeg02Space, mo=1 )
+                                    cmds.parent( lDnLeg02Ctrl[0], lDnLeg02Sdk  )
+                                    cmds.connectAttr( '%s.t' % lDnLeg02Ctrl[0], '%s.t' % l_lowerLegBendy.bendyCtrl02[0][0] )
+                                    # Clean Up Left Leg Bendy
+                                    legSecondaryCtrlGrp= cmds.group( n= 'legSecondary_ctrlGrp', em=1 )
+                                    cmds.parent( legSecondaryCtrlGrp, basic.rootCtrl ) 
+                                    cmds.parent( lUpLeg02Space, lDnLeg02Space, legSecondaryCtrlGrp )
+                                    cmds.parent( l_upperLegBendy.mainGrp, l_lowerLegBendy.mainGrp, bendyGrp  )
+                                    if cmds.checkBoxGrp( cbG3, q=1, v3=1 )== True:
+                                        # Right UpperLeg
+                                        rUpLeg02Ctrl= cmds.duplicate( r_upperLegBendy.bendyCtrl02[0], n= str(r_upperLegBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                        rUpLeg02Sdk= cmds.group( n= '%s_sdk' % rUpLeg02Ctrl[0], em=1 )
+                                        cmds.group( n= '%s_align' % rUpLeg02Ctrl[0], em=0 )
+                                        rUpLeg02Space= cmds.group( n= '%s_space' % rUpLeg02Ctrl[0], em=0 )
+                                        tmpCnst= cmds.parentConstraint( r_upperLegBendy.bendyCtrl02[0], rUpLeg02Space, mo=0 )
+                                        cmds.delete( tmpCnst, rUpLeg02Ctrl[1] )
+                                        cmds.parentConstraint( rLegJnt[0], rUpLeg02Space, mo=1 )
+                                        cmds.parent( rUpLeg02Ctrl[0], rUpLeg02Sdk  )
+                                        cmds.connectAttr( '%s.t' % rUpLeg02Ctrl[0], '%s.t' % r_upperLegBendy.bendyCtrl02[0][0] )
+                                        # Right LowerLeg
+                                        rDnLeg02Ctrl= cmds.duplicate( r_lowerLegBendy.bendyCtrl02[0], n= str(r_lowerLegBendy.bendyCtrl02[0][0]).replace( 'bendy02', 'secondary' ), rc=1 )
+                                        rDnLeg02Sdk= cmds.group( n= '%s_sdk' % rDnLeg02Ctrl[0], em=1 )
+                                        cmds.group( n= '%s_align' % rDnLeg02Ctrl[0], em=0 )
+                                        rDnLeg02Space= cmds.group( n= '%s_space' % rDnLeg02Ctrl[0], em=0 )
+                                        tmpCnst= cmds.parentConstraint( r_lowerLegBendy.bendyCtrl02[0], rDnLeg02Space, mo=0 )
+                                        cmds.delete( tmpCnst, rDnLeg02Ctrl[1] )
+                                        cmds.parentConstraint( rLegJnt[1], rDnLeg02Space, mo=1 )
+                                        cmds.parent( rDnLeg02Ctrl[0], rDnLeg02Sdk  )
+                                        cmds.connectAttr( '%s.t' % rDnLeg02Ctrl[0], '%s.t' % r_lowerLegBendy.bendyCtrl02[0][0] )
+                                        # Clean Up Right Leg Bendy 
+                                        cmds.parent( rUpLeg02Space, rDnLeg02Space, legSecondaryCtrlGrp )
+                                        cmds.parent( r_upperLegBendy.mainGrp, r_lowerLegBendy.mainGrp, bendyGrp  )
                                     else:
                                         pass
                                 else:
