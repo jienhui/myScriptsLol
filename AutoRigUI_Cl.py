@@ -816,6 +816,13 @@ def cReverseFootCBOff():
 # Main Setup Function
 def cSetup():            
     
+    # Create a custom progressBar in a windows ...
+    pWin = cmds.window( title="Setting up Rig ... " )
+    cmds.columnLayout()
+    progressControl = cmds.progressBar(maxValue=23.5, width=300)
+    cmds.progressBar(progressControl, edit=True, step=1 )
+    cmds.showWindow( pWin )
+    
     # Setup Head
     h= CH.HeadSetup_Cl()
     neckJnt= cmds.textField( headTF1, q=1, tx=1 )
@@ -862,6 +869,7 @@ def cSetup():
         pass
         
     # Setup Spine
+    cmds.progressBar(progressControl, edit=True, step=3 )
     spineJnt= cmds.textField( spineTF1, q=1, tx=1 )
     if cmds.checkBox( cb3, q=1, v=1 )== True:
         if 'spine' in str(spineJnt):
@@ -871,7 +879,7 @@ def cSetup():
     else:
         pass
     
-    # Setup Arm    
+    # Setup Arm   
     clavicleJnt= cmds.textField( armTF1, q=1, tx=1 )
     shoulderJnt= cmds.textField( armTF2, q=1, tx=1 )
      
@@ -1199,6 +1207,7 @@ def cSetup():
         pass
     
     # Finalize Rig
+    cmds.progressBar(progressControl, edit=True, step=3 )
     basic= CB.BasicSetup_Cl()
     pelvisJnt= cmds.textField( spineTF0, q=1, tx=1 )
     chestJnt= cmds.textField( spineTF2, q=1, tx=1 )
@@ -1399,6 +1408,13 @@ def cSetup():
                 else:
                     pass
 
-    
+    cmds.select( cl=1 )
+    cmds.progressBar(progressControl, edit=True, step=4 )
+    cmds.progressBar(progressControl, edit=True, step=5 )
+    cmds.progressBar(progressControl, edit=True, step=6 )
+    cmds.progressBar(progressControl, edit=True, step=8 )
+    cmds.progressBar(progressControl, edit=True, step=9 )
+    cmds.progressBar(progressControl, edit=True, step=10 )
+    cmds.deleteUI( pWin )
         
 AutoRigUI_Fn()
