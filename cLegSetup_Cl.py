@@ -90,9 +90,9 @@ class cLegSetup_Cl():
         self.IKFKSwitch= cmds.rename( str(crv[0]), '%s_%s_ikFk_ctrl' % (self.jnt[0], self.name) )
         cmds.group( n= '%s_sdk' % self.IKFKSwitch, em=0 )
         cmds.group( n= '%s_align' % self.IKFKSwitch, em=0 )
-        spaceGrp= cmds.group( n= '%s_space' % self.IKFKSwitch, em=0 )
-        cmds.parent( spaceGrp, w=1 )
-        tmpCst= cmds.pointConstraint( self.selJnt[0], spaceGrp, mo=0 )
+        self.IKFKSpace= cmds.group( n= '%s_space' % self.IKFKSwitch, em=0 )
+        cmds.parent( self.IKFKSpace, w=1 )
+        tmpCst= cmds.pointConstraint( self.selJnt[0], self.IKFKSpace, mo=0 )
         cmds.delete( tmpCst )
         cmds.delete( text )
         cmds.setAttr( '%s.tx' % self.IKFKSwitch, l=1, k=0, cb=0 )
@@ -117,7 +117,7 @@ class cLegSetup_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[0], '%s.inRotate1' % blnNode1 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[0], '%s.inTranslate2' % blnNode1 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[0], '%s.inRotate2' % blnNode1 )
-        pb01= cmds.rename( blnNode1, str(self.selJnt[0]) + '_PB01' )
+        cmds.rename( blnNode1, str(self.selJnt[0]) + '_PB01' )
         
         # pairBlend 02
         blnNode2= cmds.pairBlend( nd= self.selJnt[1], at=['tx','ty','tz','rx','ry','rz'] )
@@ -126,7 +126,7 @@ class cLegSetup_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[1], '%s.inRotate1' % blnNode2 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[1], '%s.inTranslate2' % blnNode2 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[1], '%s.inRotate2' % blnNode2 )
-        pb02= cmds.rename( blnNode2, str(self.selJnt[1]) + '_PB02' )
+        cmds.rename( blnNode2, str(self.selJnt[1]) + '_PB02' )
         
         # pairBlend 03
         blnNode3= cmds.pairBlend( nd= self.selJnt[2], at=['tx','ty','tz','rx','ry','rz'] )
@@ -135,7 +135,7 @@ class cLegSetup_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[2], '%s.inRotate1' % blnNode3 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[2], '%s.inTranslate2' % blnNode3 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[2], '%s.inRotate2' % blnNode3 )
-        pb01= cmds.rename( blnNode3, str(self.selJnt[2]) + '_PB03' )
+        cmds.rename( blnNode3, str(self.selJnt[2]) + '_PB03' )
         
         # pairBlend 04
         blnNode4= cmds.pairBlend( nd= self.selJnt[3], at=['tx','ty','tz','rx','ry','rz'] )
@@ -144,7 +144,7 @@ class cLegSetup_Cl():
         cmds.connectAttr( '%s.rotate' % self.fkJntSel[3], '%s.inRotate1' % blnNode4 )
         cmds.connectAttr( '%s.translate' % self.ikJntSel[3], '%s.inTranslate2' % blnNode4 )
         cmds.connectAttr( '%s.rotate' % self.ikJntSel[3], '%s.inRotate2' % blnNode4 )
-        pb01= cmds.rename( blnNode4, str(self.selJnt[3]) + '_PB04' )
+        cmds.rename( blnNode4, str(self.selJnt[3]) + '_PB04' )
         
     # Setup FK Controller Function
         self.cFkSetup_Fn()
@@ -266,21 +266,21 @@ class cLegSetup_Cl():
         # Create Rotate Aim Up Hierarchy
         aimUp= cmds.group( n= '%s_%s_rotateAim_up' % (self.jnt[0], self.name), em=1 )
         aimGrp= cmds.group( n= '%s_%s_rotateAim_upGrp' % (self.jnt[0], self.name), em=0 )
-        aimHrc= cmds.group( n= '%s_%s_rotateAim_hrc' % (self.jnt[0], self.name), em=0 )
-        tmpCn= cmds.parentConstraint( self.ikJntSel[0], aimHrc, mo=0 )
+        self.aimHrc= cmds.group( n= '%s_%s_rotateAim_hrc' % (self.jnt[0], self.name), em=0 )
+        tmpCn= cmds.parentConstraint( self.ikJntSel[0], self.aimHrc, mo=0 )
         cmds.delete( tmpCn )
         aimLoc= cmds.spaceLocator( n= '%s_%s_aimLoc' % (self.jnt[0], self.name) )
         self.aimLocGrp= cmds.group( n= '%sGrp' % str(aimLoc[0]), em=0 )
         tmpCn= cmds.parentConstraint( self.ikJntSel[0], self.aimLocGrp, mo=0 )
         cmds.delete( tmpCn )
         cmds.xform( aimLoc[0], t= [0,1,0] )
-        tmpAim= cmds.aimConstraint( self.ikCtrl, aimHrc, mo=1, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wuo= str(aimLoc[0]) )
+        tmpAim= cmds.aimConstraint( self.ikCtrl, self.aimHrc, mo=1, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wuo= str(aimLoc[0]) )
         cmds.delete( tmpAim )
         aimFollow= cmds.aimConstraint( self.ikCtrl, aimGrp, mo=1, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wuo= str(aimLoc[0]) )
         cmds.parent( self.pvSpace, aimUp )
         ctrlFollow= cmds.parentConstraint( self.ikCtrl, self.pvSpace,  mo=1 )
         self.ikCtrlGrp= cmds.group( n= '%s_%s_IK_ctrlGrp' % (self.jnt[0], self.name), em=1 )
-        cmds.parent( self.ikSpace, aimHrc, self.ikCtrlGrp )
+        cmds.parent( self.ikSpace, self.aimHrc, self.ikCtrlGrp )
         cmds.connectAttr( '%s.ikFkSwitch' % self.IKFKSwitch, '%s.v' % self.ikCtrlGrp )
         
         # Create Condition node
@@ -317,7 +317,6 @@ class cLegSetup_Cl():
        
         connExtraAttrs = ['upperStretch', 'kneeSlide', 'lowerStretch']
         legJntLen= [ self.ikJntSel[0], self.ikJntSel[1], self.ikJntSel[2] ]
-        print legJntLen
         self.ikLocList=[]
         self.ikLocGrpList=[]
         MD02List= []
@@ -426,7 +425,7 @@ class cLegSetup_Cl():
         cmds.connectAttr( '%s.outputX' % ctrlMD, '%s.ry' % aimUp )
         cmds.hide( self.distLoc1, loc2 )
         
-        return [ self.fkCtrlSpaceList[0], self.ikCtrlGrp, self.locGrp, self.aimLocGrp, self.distLoc1[0], self.ikJntSel, self.ikH[0], self.ikCtrl ]
+        return [ self.fkCtrlSpaceList[0], self.IKFKSpace, self.ikCtrlGrp, self.locGrp, self.aimLocGrp, self.aimHrc, self.distLoc1[0], self.ikJntSel, self.ikH[0], self.ikCtrl ]
         
     # Foot Setup      
     def cFootSetup_Fn(self, legIKCtrl, legIkH, legIkJntSel, heelJnt, ballJnt, toeJnt, toeTipJnt, sideRJnt, sideLJnt, side ):
@@ -480,10 +479,13 @@ class cLegSetup_Cl():
         
         return [ self.feetLocGrp ]
         
-if __name__ == '__main__':
-    LS= cLegSetup_Cl()
-    l= LS.cLegSetup_Fn( 'l_hip01_jnt', 'leg' )
-    legIKCtrl= LS.ikCtrl
-    legIkH= LS.ikH[0]
-    legIkJntSel= LS.ikJntSel
-    r= LS.cFootSetup_Fn( legIKCtrl, legIkH, legIkJntSel,'l_heels_jnt', 'l_ball01_jnt', 'l_toe01_jnt', 'l_toeTip_jnt', 'l_sideR_jnt', 'l_sideL_jnt', 'l' )
+#if __name__ == '__main__':
+    #LS= cLegSetup_Cl()
+    #l= LS.cLegSetup_Fn( 'l_hip01_jnt', 'leg' )
+    #legIKCtrl= LS.ikCtrl
+    #print legIKCtrl
+    #print LS.ikH[0]
+    #print LS
+    #legIkH= LS.ikH[0]
+    #legIkJntSel= LS.ikJntSel
+    #r= LS.cFootSetup_Fn( legIKCtrl, legIkH, legIkJntSel,'l_heels_jnt', 'l_ball01_jnt', 'l_toe01_jnt', 'l_toeTip_jnt', 'l_sideR_jnt', 'l_sideL_jnt', 'l' )
