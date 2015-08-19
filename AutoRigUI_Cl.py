@@ -1,14 +1,11 @@
 import maya.cmds as cmds
-import maya.cmds as cmds
-import cCtrlHrc_Cl as CC
-import cNailCtrlHrc_Cl as CN
 import cBasicSetup_Cl as CB
 import cArmSetup_Cl as CA
 import cSpineSetup_Cl as CS
 import cHeadSetup_Cl as CH
 import cLegSetup_Cl as CL
-reload( CL )
 import bendySetup_Cl as B
+import cCtrlEditor_Cl as C
 
 # Proxy Bone Class
         
@@ -110,7 +107,7 @@ def AutoRigUI_Fn():
         cmds.windowPref( "cAutoRig Setup", remove=True )
         
     # Main Window 
-    window= cmds.window( "cAutoRig Setup", title="cAutoRig v1.0", iconName='Autorig', s=0, h=600 )
+    window= cmds.window( "cAutoRig Setup", title="cAutoRig v1.0", iconName='Autorig', s=False, h=600 )
     # Menu Bar
     cmds.menuBarLayout()
     cmds.menu( label='Edit' )       
@@ -120,6 +117,8 @@ def AutoRigUI_Fn():
     cmds.menuItem( divider=True )
     cmds.menuItem( label= 'Expand All', c='cExpand()' )
     cmds.menuItem( label= 'Contract All', c='cContract()' )
+    cmds.menuItem( divider=True )
+    cmds.menuItem( label= 'Controller Editor', c='cCtrlEditor()' )
     cmds.menu( label= 'Help', helpMenu=1 )
     cmds.menuItem( label ='About...', c= 'cHelpMenu()')
     cmds.separator( h=5 )
@@ -337,6 +336,120 @@ def cReset():
     cLegCBOn()
     cReverseFootCBOn()
         
+# Controller Editor Funtion
+def cCtrlEditor():
+    
+    # Global Procedure
+    if cmds.window( "Control Curve Editor", q=1, ex=True ):
+        cmds.deleteUI( "Control Curve Editor" )
+        cmds.windowPref( "Control Curve Editor", remove=True )
+            
+    # Main Window 
+    win= cmds.window( "Control Curve Editor", title="Control Curve Editor v1.0", iconName='CtrlEditor', s=0, tlb=1 )
+    # Menu Item
+    cmds.menuBarLayout()
+    cmds.menu( label='Edit' )       
+    cmds.menuItem( label='Select All Controllers', c='cGetControllers()')
+    cmds.separator( h=5 )
+    cmds.setParent('..')
+    # Color Picker
+    cmds.frameLayout( label= 'Color Picker', borderStyle= 'etchedOut', collapsable= 1 )
+    cmds.rowLayout( numberOfColumns=6 )
+    cmds.button( l= '', bgc= [255,0,0], c= 'cRed()' )
+    cmds.button( l= '', bgc= [255,255,0], c= 'cYellow()' )
+    cmds.button( l= '', bgc= [0,255,0], c= 'cGreen()' )
+    cmds.button( l= '', bgc= [0,255,255], c= 'cCryan()' )
+    cmds.button( l= '', bgc= [0,0,255], c= 'cBlue()' )
+    cmds.button( l= '', bgc= [255,0,255], c= 'cPink()' )
+    cmds.setParent('..')
+    cmds.separator( st= "in" )
+    cmds.setParent('..')
+    cmds.setParent('..')
+    # Scale UI
+    cmds.frameLayout( label= 'Scale', borderStyle= 'etchedOut', collapsable= 1 )
+    cmds.rowLayout( numberOfColumns=2 )
+    cmds.button( label= 'Decrease', c= 'cMinusScale()', width= 105, height= 30 )
+    cmds.button( label= 'Increase', c= 'cAddScale()', width= 105, height= 30, bgc= [0.65,0.65,0.65] )
+    cmds.showWindow(win)
+    
+# Select All Function    
+def cGetControllers():
+
+    selObj= cmds.ls( '%s' % '*_ctrl' )
+    if cmds.objExists( 'worldArrow1'):
+        if cmds.objExists( 'worldArrow2'):
+            if cmds.objExists( 'worldArrow3'):
+                if cmds.objExists( 'worldArrow4'):
+                    selObj.append( 'worldArrow1' )
+                    selObj.append( 'worldArrow2' )
+                    selObj.append( 'worldArrow3' )
+                    selObj.append( 'worldArrow4' )
+                else:
+                    pass
+            else:
+                pass
+        else:
+            pass
+    else:
+        pass
+    cmds.select( selObj )
+    
+# Scale Function
+def cAddScale():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl: 
+        cmds.scale( 1.5, 1.5, 1.5, '%s.cv[0:*]' % each )
+
+def cMinusScale():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.scale( 0.5, 0.5, 0.5, '%s.cv[0:*]' % each )
+
+# Color Piker Function
+def cRed():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 13 )
+
+def cYellow():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 17 )
+        
+def cGreen():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 14 )
+        
+def cCryan():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 18 )
+
+def cBlue():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 6 )
+
+def cPink():
+    
+    selCtrl= cmds.ls( sl=1 )
+    for each in selCtrl:
+        cmds.setAttr( '%s.overrideEnabled' % each, 1 )
+        cmds.setAttr( '%s.overrideColor' % each, 20 )
+
 # Help Funtion
 def cHelpMenu():
     cHelpWin= 'Auto Rig Help Window'
@@ -817,7 +930,7 @@ def cReverseFootCBOff():
 def cSetup():            
     
     # Create a custom progressBar in a windows ...
-    pWin = cmds.window( title="Setting up Rig ... " )
+    pWin = cmds.window( 'AutoRig Progress Window', title="Setting up Rig ... " )
     cmds.columnLayout()
     progressControl = cmds.progressBar(maxValue=23.5, width=300)
     cmds.progressBar(progressControl, edit=True, step=1 )
@@ -1416,5 +1529,6 @@ def cSetup():
     cmds.progressBar(progressControl, edit=True, step=9 )
     cmds.progressBar(progressControl, edit=True, step=10 )
     cmds.deleteUI( pWin )
+    cCtrlEditor()    
         
 AutoRigUI_Fn()
