@@ -67,10 +67,16 @@ def cMConnectAttr():
     cmds.button( label='Clear Source List', c='cMACRemoveSel1()' )
     cmds.button( label='Clear Target List', c='cMACRemoveSel2()' )
     cmds.setParent('..')
+    # One to One Button
+    cmds.separator()
+    cmds.separator()
+    cmds.rowLayout( nc=1, cw=[1,330], cat=[1,'both',1] )
+    cmds.button( label='One to One Transfer', bgc=[0.65,0.65,0.65], c='cMACOneToOneTransfer()' )
+    cmds.setParent('..')
     # connect button Layout
     cmds.separator()
     cmds.rowLayout( nc=1, cw=[1,330], cat=[1,'both',1] )
-    cmds.button( label='Transfer', bgc=[0.65,0.65,0.65], c='cMACTransfer()' )
+    cmds.button( label='Transfer', bgc=[0.85,0.85,0.85], c='cMACTransfer()' )
     cmds.showWindow( win )
 
 ###### HELP MENU FUNCTION ######
@@ -102,10 +108,7 @@ def cHelpMenu():
 def cMCAReset():
     cmds.textScrollList( tsl1, e= 1, removeAll= True )
     cmds.textScrollList( tsl2, e= 1, removeAll= True )
-    cmds.radioButton( radioA, e= 1, sl= 1 )
-    cmds.checkBoxGrp( cb1, e=1, va3= [1,1,1] )
-    cmds.checkBoxGrp( cb2, e=1, va3= [1,1,1] )
-    
+    cmds.radioButton( radioA, e= 1, sl= 1 )    
 
 ###### ADD SELECTED OBJECTS TO OUTPUT LIST FUNCTION ######
 
@@ -131,8 +134,16 @@ def cMACRemoveSel1():
     
 def cMACRemoveSel2():
     cmds.textScrollList( tsl2, edit= True, removeAll= True )
-        
-###### CONNECT ATTRIBUTES FUNCTION ######
+
+###### ONE TO ONE TRANSFER FUNCTION ######  
+def cMACOneToOneTransfer():
+      
+    selObj= cmds.ls( sl=1 )
+    cmds.transferShadingSets( spa= 1, sm= 3 )
+    cmds.select( cl=1 )
+    sys.stdout.write("Shaders Transfer Successfully!\n" )
+            
+###### TRANSFER SHADER FUNCTION ######
 
 def cMACTransfer():
     
