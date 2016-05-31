@@ -29,30 +29,20 @@ class Form(QDialog):
           
         # Tab Widget
         tab= QTabWidget()
-        self.tab1= tab.addTab( QWidget(), "Prop" )
-        self.tab2= tab.addTab( QWidget(), "Biped" )
-        self.tab3= tab.addTab( QWidget(), "Quadruped" )
-        
-        # Buttons Widget
-        bttn1= QPushButton()
-        bttn1.setText("button 1")
-        self.connect( bttn1, SIGNAL("clicked()"), self.printFunction1 )
-        
-        bttn2= QPushButton()
-        bttn2.setText("button 2")
-        self.connect( bttn2, SIGNAL("clicked()"), self.printFunction2 )
-        
-        bttn3= QPushButton()
-        bttn3.setText("button 3")
-        self.connect( bttn3, SIGNAL("clicked()"), self.printFunction3 )
-        
-        bttn4= QPushButton()
-        bttn4.setText("button 4")
-        self.connect( bttn4, SIGNAL("clicked()"), self.printFunction4 )
+        self.tab1= QWidget()
+        self.tab2= QWidget()
+        self.tab3= QWidget()
+        tab.addTab( self.tab1, "Prop" )
+        tab.addTab( self.tab2, "Biped" )
+        tab.addTab( self.tab3, "Quadruped" )
+        self.tab1UI()
+        #self.tab2UI()
+        #self.tab3UI()
         
         # Layout
-        mainLayout= QVBoxLayout()
+        mainLayout= QFormLayout()
         mainLayout.addWidget( bar )
+        mainLayout.setVerticalSpacing(5)
         mainLayout.addWidget( tab )
         # Window Structure
         self.setLayout(mainLayout)
@@ -66,17 +56,29 @@ class Form(QDialog):
     def readMeDialog(self):
         print "Read Me"
         
-    def printFunction1(self):
-        print "button 1 clicked"        
+    # Prop UI
+    def tab1UI(self):
+        tab1Layout= QVBoxLayout()
         
-    def printFunction2(self):
-        print "button 2 clicked"
-    
-    def printFunction3(self):
-        print "button 3 clicked"
+        # Buttons Widget
+        bttn1= QPushButton()
+        bttn1.setText("button 1")
+        
+        bttn2= QPushButton()
+        bttn2.setText("button 2")
+        
+        bttn3= QPushButton()
+        bttn3.setText("button 3")
+        
+        bttn4= QPushButton()
+        bttn4.setText("button 4")
+        
+        tab1Layout.addWidget(bttn1)
+        tab1Layout.addWidget(bttn2)
+        tab1Layout.addWidget(bttn3)
+        tab1Layout.addWidget(bttn4)
+        self.tab1.setLayout( tab1Layout )
 
-    def printFunction4(self):
-        print "button 4 clicked"
 
 
 if __name__ == "__main__":
