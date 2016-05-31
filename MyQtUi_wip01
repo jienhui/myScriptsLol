@@ -1,0 +1,83 @@
+from PySide.QtGui import *
+from PySide.QtCore import *
+import maya.OpenMayaUI as mui
+from shiboken import wrapInstance
+
+def mayaMainWindow():
+    mainWindow= mui.MQtUtil.mainWindow()
+    return wrapInstance(long(mainWindow), QWidget)
+    
+class Form(QDialog):
+    def __init__(self, parent=mayaMainWindow()):
+        super(Form, self).__init__()
+        # Menu Bar
+        bar= QMenuBar()
+        
+        barFile= bar.addMenu("Edit")
+        fileReset= barFile.addAction("Reset      ")
+        fileReset.setShortcut("Ctrl + R")
+        self.connect( fileReset, SIGNAL("triggered()"), self.resetUI() )
+        
+        barFile.addSeparator()
+        
+        fileQuit= barFile.addAction("Quit      ")
+        self.connect( fileQuit, SIGNAL("triggered()"), SLOT("reject()") )
+
+        barHelp= bar.addMenu("Help")
+        helpReadme= barHelp.addAction("ReadMe      ")
+        self.connect( helpReadme, SIGNAL("triggered()"), self.readMeDialog() )
+          
+        # Tab Widget
+        
+        
+        # Buttons Widget
+        bttn1= QPushButton()
+        bttn1.setText("button 1")
+        self.connect( bttn1, SIGNAL("clicked()"), self.printFunction1 )
+        
+        bttn2= QPushButton()
+        bttn2.setText("button 2")
+        self.connect( bttn2, SIGNAL("clicked()"), self.printFunction2 )
+        
+        bttn3= QPushButton()
+        bttn3.setText("button 3")
+        self.connect( bttn3, SIGNAL("clicked()"), self.printFunction3 )
+        
+        bttn4= QPushButton()
+        bttn4.setText("button 4")
+        self.connect( bttn4, SIGNAL("clicked()"), self.printFunction4 )
+        # Layout
+        mainLayout= QVBoxLayout()
+        mainLayout.addWidget( bar )
+        mainLayout.addWidget( bttn1 )
+        mainLayout.addWidget( bttn2 )
+        mainLayout.addWidget( bttn3 )
+        mainLayout.addWidget( bttn4 )
+        # Window Structure
+        self.setLayout(mainLayout)
+        self.setWindowTitle("Practice")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        
+    # Function
+    def resetUI(self):
+        print "Reset"
+        
+    def readMeDialog(self):
+        print "Read Me"
+        
+    def printFunction1(self):
+        print "button 1 clicked"        
+        
+    def printFunction2(self):
+        print "button 2 clicked"
+    
+    def printFunction3(self):
+        print "button 3 clicked"
+
+    def printFunction4(self):
+        print "button 4 clicked"
+
+
+if __name__ == "__main__":
+    a= Form()
+    a.show()
