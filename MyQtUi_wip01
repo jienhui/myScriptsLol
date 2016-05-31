@@ -28,7 +28,8 @@ class Form(QDialog):
         self.connect( helpReadme, SIGNAL("triggered()"), self.readMeDialog() )
           
         # Tab Widget
-        
+        tab= QTabWidget()
+        self.tab1= tab.addTab( QWidget(), "Prop" )
         
         # Buttons Widget
         bttn1= QPushButton()
@@ -49,6 +50,7 @@ class Form(QDialog):
         # Layout
         mainLayout= QVBoxLayout()
         mainLayout.addWidget( bar )
+        mainLayout.addWidget( tab )
         mainLayout.addWidget( bttn1 )
         mainLayout.addWidget( bttn2 )
         mainLayout.addWidget( bttn3 )
