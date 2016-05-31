@@ -30,6 +30,8 @@ class Form(QDialog):
         # Tab Widget
         tab= QTabWidget()
         self.tab1= tab.addTab( QWidget(), "Prop" )
+        self.tab2= tab.addTab( QWidget(), "Biped" )
+        self.tab3= tab.addTab( QWidget(), "Quadruped" )
         
         # Buttons Widget
         bttn1= QPushButton()
@@ -47,14 +49,11 @@ class Form(QDialog):
         bttn4= QPushButton()
         bttn4.setText("button 4")
         self.connect( bttn4, SIGNAL("clicked()"), self.printFunction4 )
+        
         # Layout
         mainLayout= QVBoxLayout()
         mainLayout.addWidget( bar )
         mainLayout.addWidget( tab )
-        mainLayout.addWidget( bttn1 )
-        mainLayout.addWidget( bttn2 )
-        mainLayout.addWidget( bttn3 )
-        mainLayout.addWidget( bttn4 )
         # Window Structure
         self.setLayout(mainLayout)
         self.setWindowTitle("Practice")
