@@ -3,10 +3,11 @@ from PySide.QtCore import *
 import maya.OpenMayaUI as mui
 from shiboken import wrapInstance
 
+# Main UI
 def mayaMainWindow():
     mainWindow= mui.MQtUtil.mainWindow()
     return wrapInstance(long(mainWindow), QWidget)
-    
+
 class Form(QDialog):
     def __init__(self, parent=mayaMainWindow()):
         super(Form, self).__init__()
@@ -14,9 +15,9 @@ class Form(QDialog):
         bar= QMenuBar()
         
         barFile= bar.addMenu("Edit")
-        fileReset= barFile.addAction("Reset      ")
-        fileReset.setShortcut("Ctrl + R")
-        self.connect( fileReset, SIGNAL("triggered()"), self.resetUI() )
+        self.fileReset= barFile.addAction("Reset      ")
+        self.fileReset.setShortcut("Ctrl + R")
+        self.connect( self.fileReset, SIGNAL("triggered()"), self.resetUI() )
         
         barFile.addSeparator()
         
@@ -40,44 +41,94 @@ class Form(QDialog):
         #self.tab3UI()
         
         # Layout
-        mainLayout= QFormLayout()
+        mainLayout= QVBoxLayout()
         mainLayout.addWidget( bar )
-        mainLayout.setVerticalSpacing(5)
+        mainLayout.setSpacing(5)
         mainLayout.addWidget( tab )
+        mainLayout.stretch(1)
         # Window Structure
         self.setLayout(mainLayout)
         self.setWindowTitle("Practice")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         
-    # Function
+        
+    # Menu Function
     def resetUI(self):
-        print "Reset"
+        # reset Function
+        print "reset"
         
     def readMeDialog(self):
-        print "Read Me"
+        # Read Me Function
+        print "read me"
         
-    # Prop UI
+    # Prop Tab UI
     def tab1UI(self):
         tab1Layout= QVBoxLayout()
-        
-        # Buttons Widget
-        bttn1= QPushButton()
-        bttn1.setText("button 1")
-        
-        bttn2= QPushButton()
-        bttn2.setText("button 2")
-        
-        bttn3= QPushButton()
-        bttn3.setText("button 3")
-        
-        bttn4= QPushButton()
-        bttn4.setText("button 4")
-        
-        tab1Layout.addWidget(bttn1)
-        tab1Layout.addWidget(bttn2)
-        tab1Layout.addWidget(bttn3)
-        tab1Layout.addWidget(bttn4)
+        tab1Layout.addWidget( self.propGrpBox() )
+        tab1Layout.addWidget( self.ropeGrpBox() )
         self.tab1.setLayout( tab1Layout )
+    
+    def propGrpBox(self):
+        propLayout= QGridLayout()
+        propBox= QGroupBox("Auto Prop Rig")
+        
+        rigMethodLabel= QLabel( "Rig" )
+        oneByOneRB= QRadioButton("&One by one")
+        allToOneRB= QRadioButton( "&All to one" )
+        deformLabel= QLabel( "Deformers" )
+        addSquashCB= QCheckBox("Add &squash")  
+        propRigBttn= QPushButton( "Rig" )
+        
+        oneByOneRB.setChecked(True)
+        addSquashCB.setChecked(True)
+        
+        propLayout.addWidget( rigMethodLabel , 0, 0, 1, 3 )
+        propLayout.addWidget( oneByOneRB, 1, 0 )
+        propLayout.addWidget( allToOneRB, 1, 1 )
+        propLayout.addWidget( deformLabel, 2, 0, 1, 3 )
+        propLayout.addWidget( addSquashCB, 3, 0 )
+        propLayout.addWidget( propRigBttn, 4, 0, 1, 3 )
+        propBox.setLayout( propLayout )
+        
+        return propBox
+    
+    def ropeGrpBox(self):
+        ropeLayout= QGridLayout()
+        ropeBox= QGroupBox("Auto Rope Rig")
+        
+        IKSpineRB= QRadioButton("&IK Spine")
+        wireInOneRB= QRadioButton( "&Wire Deformer" )
+
+        crvLE= QLineEdit()
+        crvLE.setPlaceholderText( "Please add curve..." )
+        crvBttn= QPushButton( "Add Curve" )
+        crvMenu = QMenu(self)
+        crvMenu.addAction("&Create Curve")
+        crvMenu.addAction("&Poly Edge To Curve")
+        crvMenu.addAction("&Add Selected")
+        crvBttn.setMenu(crvMenu)      
+        
+        ctrlLabel= QLabel("Ctrl number:")
+        ctrlSB= QDoubleSpinBox()
+        ctrlSB.setRange( 1, 1000 )
+        
+        ropeRigBttn= QPushButton( "Rig" )
+        
+        wireInOneRB.setChecked(True)
+        
+        ropeLayout.addWidget( IKSpineRB, 0, 0 )
+        ropeLayout.addWidget( wireInOneRB, 0, 1 )
+        ropeLayout.addWidget( crvLE, 1, 0, 1, 3 )
+        ropeLayout.addWidget( crvBttn, 2, 0, 1, 3 )
+        ropeLayout.addWidget( ctrlLabel, 3, 0 )
+        ropeLayout.addWidget( ctrlSB, 3, 1 )
+        ropeLayout.addWidget( ropeRigBttn, 4, 0, 1, 3 )
+        ropeBox.setLayout( ropeLayout )
+        
+        return ropeBox
+        
+        
+        
 
 
 
