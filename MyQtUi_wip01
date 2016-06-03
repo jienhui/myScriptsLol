@@ -37,7 +37,7 @@ class Form(QDialog):
         tab.addTab( self.tab2, "Biped" )
         tab.addTab( self.tab3, "Quadruped" )
         self.tab1UI()
-        #self.tab2UI()
+        self.tab2UI()
         #self.tab3UI()
         
         # Layout
@@ -73,10 +73,10 @@ class Form(QDialog):
         propBox= QGroupBox("Auto Prop Rig")
         
         rigMethodLabel= QLabel( "Rig" )
-        oneByOneRB= QRadioButton("&One by one")
-        allToOneRB= QRadioButton( "&All to one" )
+        oneByOneRB= QRadioButton("&One By One")
+        allToOneRB= QRadioButton( "&All To One" )
         deformLabel= QLabel( "Deformers" )
-        addSquashCB= QCheckBox("Add &squash")  
+        addSquashCB= QCheckBox("Add &Squash")  
         propRigBttn= QPushButton( "Rig" )
         
         oneByOneRB.setChecked(True)
@@ -108,7 +108,7 @@ class Form(QDialog):
         crvMenu.addAction("&Add Selected")
         crvBttn.setMenu(crvMenu)      
         
-        ctrlLabel= QLabel("Ctrl number:")
+        ctrlLabel= QLabel("Ctrls number:")
         ctrlSB= QDoubleSpinBox()
         ctrlSB.setRange( 1, 1000 )
         
@@ -126,12 +126,70 @@ class Form(QDialog):
         ropeBox.setLayout( ropeLayout )
         
         return ropeBox
+    
+    # Biped Tab UI
+    def tab2UI(self):
+        tab2Layout= QVBoxLayout()
+        tab2Layout.addWidget( self.boneGrpBox() )
+        tab2Layout.addWidget( self.bipedRigGrpBox() )
+        self.tab2.setLayout( tab2Layout )
+        
+    def boneGrpBox(self):
+        boneLayout= QGridLayout()
+        boneBox= QGroupBox("Proxy Joint")
+        
+        mirrorLabel= QLabel( "Mirror Joint?" ) 
+        yesRB= QRadioButton( "Yes" )
+        noRB= QRadioButton( "No" )
+        
+        setUpJntBttn= QPushButton("Create")
+        resetJntBttn= QPushButton("Reset")
+        freezeJntBttn= QPushButton( "Polish" )
+        
+        yesRB.setChecked(True)
+        
+        boneLayout.addWidget( mirrorLabel, 0, 0 )
+        boneLayout.addWidget( yesRB, 0, 1 )
+        boneLayout.addWidget( noRB, 0, 2 )
+        boneLayout.addWidget( setUpJntBttn, 1, 0, 1, 3 )
+        boneLayout.addWidget( resetJntBttn, 2, 0, 1, 3 )
+        boneLayout.addWidget( freezeJntBttn, 3, 0, 1, 3 )
+        boneBox.setLayout( boneLayout )
+        
+        return boneBox
+        
+    def bipedRigGrpBox(self):
+        bipedLayout= QVBoxLayout()
+        bipedBox= QGroupBox( "Setup Controllers" )
+        
+        setupRigBttn= QPushButton( "Setup Rig" )
+        
+        bipedLayout.addWidget( self.bendyBox() )
+        bipedLayout.addWidget( setupRigBttn )
+        bipedBox.setLayout( bipedLayout )
+        
+        return bipedBox
+        
+    def bendyBox(self):
+        bendyLayout= QVBoxLayout()
+        bendyBox= QGroupBox("Bendy Setup")
+        bendyBox.setCheckable(True)
+        bendyBox.setChecked(True)
+        
+        allRB= QRadioButton( "All" )
+        armRB= QRadioButton( "Arm" )
+        legRB= QRadioButton( "Leg" )
+        
+        allRB.setChecked(True)
+        
+        bendyLayout.addWidget( allRB )
+        bendyLayout.addWidget( armRB )
+        bendyLayout.addWidget( legRB )
+        bendyBox.setLayout( bendyLayout )
+        
+        return bendyBox
         
         
-        
-
-
-
 if __name__ == "__main__":
     a= Form()
     a.show()
