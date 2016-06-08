@@ -38,7 +38,7 @@ class Form(QDialog):
         self.tab.addTab( self.tab3, "Quadruped" )
         self.tab1UI()
         self.tab2UI()
-        #self.tab3UI()
+        self.tab3UI()
         
         # Layout
         mainLayout= QVBoxLayout()
@@ -104,6 +104,7 @@ class Form(QDialog):
         crvLE= QLineEdit()
         crvLE.setPlaceholderText( "Please add curve..." )
         crvBttn= QPushButton( "Add Curve" )
+        crvBttn.setStyleSheet("background-color: #333333 ")
         crvMenu = QMenu(self)
         crvMenu.addAction("&Add Selected Curve")
         crvMenu.addAction("&Poly Edge To Curve")
@@ -134,6 +135,7 @@ class Form(QDialog):
         cRigBox= QGroupBox( "Master Controllers")
         
         cRigBttn= QPushButton( "Add" )
+        cRigBttn.setStyleSheet("background-color: #777777")
         
         cRigLayout.addWidget( cRigBttn )
         cRigBox.setLayout( cRigLayout )
@@ -159,7 +161,9 @@ class Form(QDialog):
         
         setUpJntBttn= QPushButton("Create")
         resetJntBttn= QPushButton("Reset")
+        resetJntBttn.setStyleSheet("background-color: #333333 ")
         freezeJntBttn= QPushButton( "Polish" )
+        freezeJntBttn.setStyleSheet("background-color: #666666")
         
         yesRB.setChecked(True)
         
@@ -178,7 +182,7 @@ class Form(QDialog):
         bindSkinBox= QGroupBox( "Skinning" )
         
         bindBttn= QPushButton( "Bind Skin" )
-        
+
         bindSkinLayout.addWidget( bindBttn )
         bindSkinBox.setLayout( bindSkinLayout )
         
@@ -189,6 +193,7 @@ class Form(QDialog):
         bipedBox= QGroupBox( "Setup Controllers" )
         
         setupRigBttn= QPushButton( "Setup Rig" )
+        setupRigBttn.setStyleSheet("background-color: #777777")
         
         bipedLayout.addWidget( self.bendyBox() )
         bipedLayout.addWidget( setupRigBttn )
@@ -214,10 +219,85 @@ class Form(QDialog):
         bendyBox.setLayout( bendyLayout )
         
         return bendyBox
-            
         
+    # Quadruped Tab UI
+    def tab3UI(self):
+        tab3Layout= QVBoxLayout()
+        tab3Layout.addWidget( self.qBoneGrpBox() )
+        tab3Layout.addWidget( self.qBindSkinGrpBox() )
+        tab3Layout.addWidget( self.quadrupedRigGrpBox() )
+        self.tab3.setLayout( tab3Layout )
+        tab3Layout.addStretch(1)
         
+    def qBoneGrpBox(self):
+        qBoneLayout= QGridLayout()
+        qBoneBox= QGroupBox("Proxy Joint")
         
+        qMirrorLabel= QLabel( "Mirror Joint?" ) 
+        qYesRB= QRadioButton( "Yes" )
+        qNoRB= QRadioButton( "No" )
+        
+        qSetUpJntBttn= QPushButton("Create")
+        qResetJntBttn= QPushButton("Reset")
+        qResetJntBttn.setStyleSheet("background-color: #333333 ")
+        qFreezeJntBttn= QPushButton( "Polish" )
+        qFreezeJntBttn.setStyleSheet("background-color: #666666")
+        
+        qYesRB.setChecked(True)
+        
+        qBoneLayout.addWidget( qMirrorLabel, 0, 0 )
+        qBoneLayout.addWidget( qYesRB, 0, 1 )
+        qBoneLayout.addWidget( qNoRB, 0, 2 )
+        qBoneLayout.addWidget( qSetUpJntBttn, 1, 0, 1, 3 )
+        qBoneLayout.addWidget( qResetJntBttn, 2, 0, 1, 3 )
+        qBoneLayout.addWidget( qFreezeJntBttn, 3, 0, 1, 3 )
+        qBoneBox.setLayout( qBoneLayout )
+        
+        return qBoneBox
+        
+    def qBindSkinGrpBox(self):
+        qBindSkinLayout= QVBoxLayout()
+        qBindSkinBox= QGroupBox( "Skinning" )
+        
+        qBindBttn= QPushButton( "Bind Skin" )
+
+        qBindSkinLayout.addWidget( qBindBttn )
+        qBindSkinBox.setLayout( qBindSkinLayout )
+        
+        return qBindSkinBox
+        
+    def quadrupedRigGrpBox(self):
+        quadrupedLayout= QVBoxLayout()
+        quadrupedBox= QGroupBox( "Setup Controllers" )
+        
+        qSetupRigBttn= QPushButton( "Setup Rig" )
+        qSetupRigBttn.setStyleSheet("background-color: #777777")
+        
+        quadrupedLayout.addWidget( self.qBendyBox() )
+        quadrupedLayout.addWidget( qSetupRigBttn )
+        quadrupedBox.setLayout( quadrupedLayout )
+        
+        return quadrupedBox
+        
+    def qBendyBox(self):
+        qBendyLayout= QVBoxLayout()
+        qBendyBox= QGroupBox("Bendy Setup")
+        qBendyBox.setCheckable(True)
+        qBendyBox.setChecked(True)
+        
+        qAllRB= QRadioButton( "All" )
+        qArmRB= QRadioButton( "Arm" )
+        qLegRB= QRadioButton( "Leg" )
+        
+        qAllRB.setChecked(True)
+        
+        qBendyLayout.addWidget( qAllRB )
+        qBendyLayout.addWidget( qArmRB )
+        qBendyLayout.addWidget( qLegRB )
+        qBendyBox.setLayout( qBendyLayout )
+        
+        return qBendyBox
+  
 if __name__ == "__main__":
     a= Form()
     a.show()
