@@ -29,13 +29,13 @@ class Form(QDialog):
         self.connect( helpReadme, SIGNAL("triggered()"), self.readMeDialog() )
           
         # Tab Widget
-        tab= QTabWidget()
+        self.tab= QTabWidget()
         self.tab1= QWidget()
         self.tab2= QWidget()
         self.tab3= QWidget()
-        tab.addTab( self.tab1, "Prop" )
-        tab.addTab( self.tab2, "Biped" )
-        tab.addTab( self.tab3, "Quadruped" )
+        self.tab.addTab( self.tab1, "Prop" )
+        self.tab.addTab( self.tab2, "Biped" )
+        self.tab.addTab( self.tab3, "Quadruped" )
         self.tab1UI()
         self.tab2UI()
         #self.tab3UI()
@@ -44,14 +44,14 @@ class Form(QDialog):
         mainLayout= QVBoxLayout()
         mainLayout.addWidget( bar )
         mainLayout.setSpacing(5)
-        mainLayout.addWidget( tab )
+        mainLayout.addWidget( self.tab )
         mainLayout.stretch(1)
         # Window Structure
         self.setLayout(mainLayout)
+        #self.resize( 220, 400 )
         self.setWindowTitle("Practice")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        
-        
+       
     # Menu Function
     def resetUI(self):
         # reset Function
@@ -66,7 +66,9 @@ class Form(QDialog):
         tab1Layout= QVBoxLayout()
         tab1Layout.addWidget( self.propGrpBox() )
         tab1Layout.addWidget( self.ropeGrpBox() )
+        tab1Layout.addWidget( self.cRigGrpBox() )
         self.tab1.setLayout( tab1Layout )
+        tab1Layout.addStretch(1)
     
     def propGrpBox(self):
         propLayout= QGridLayout()
@@ -103,9 +105,9 @@ class Form(QDialog):
         crvLE.setPlaceholderText( "Please add curve..." )
         crvBttn= QPushButton( "Add Curve" )
         crvMenu = QMenu(self)
-        crvMenu.addAction("&Create Curve")
+        crvMenu.addAction("&Add Selected Curve")
         crvMenu.addAction("&Poly Edge To Curve")
-        crvMenu.addAction("&Add Selected")
+        crvMenu.addAction("&Create Curve")
         crvBttn.setMenu(crvMenu)      
         
         ctrlLabel= QLabel("Ctrls number:")
@@ -126,13 +128,26 @@ class Form(QDialog):
         ropeBox.setLayout( ropeLayout )
         
         return ropeBox
+        
+    def cRigGrpBox(self):
+        cRigLayout= QVBoxLayout()
+        cRigBox= QGroupBox( "Master Controllers")
+        
+        cRigBttn= QPushButton( "Add" )
+        
+        cRigLayout.addWidget( cRigBttn )
+        cRigBox.setLayout( cRigLayout )
+        
+        return cRigBox
     
     # Biped Tab UI
     def tab2UI(self):
         tab2Layout= QVBoxLayout()
         tab2Layout.addWidget( self.boneGrpBox() )
+        tab2Layout.addWidget( self.bindSkinGrpBox() )
         tab2Layout.addWidget( self.bipedRigGrpBox() )
         self.tab2.setLayout( tab2Layout )
+        tab2Layout.addStretch(1)
         
     def boneGrpBox(self):
         boneLayout= QGridLayout()
@@ -157,6 +172,17 @@ class Form(QDialog):
         boneBox.setLayout( boneLayout )
         
         return boneBox
+        
+    def bindSkinGrpBox(self):
+        bindSkinLayout= QVBoxLayout()
+        bindSkinBox= QGroupBox( "Skinning" )
+        
+        bindBttn= QPushButton( "Bind Skin" )
+        
+        bindSkinLayout.addWidget( bindBttn )
+        bindSkinBox.setLayout( bindSkinLayout )
+        
+        return bindSkinBox
         
     def bipedRigGrpBox(self):
         bipedLayout= QVBoxLayout()
@@ -188,6 +214,8 @@ class Form(QDialog):
         bendyBox.setLayout( bendyLayout )
         
         return bendyBox
+            
+        
         
         
 if __name__ == "__main__":
