@@ -1,0 +1,377 @@
+from PySide.QtGui import *
+from PySide.QtCore import *
+import maya.OpenMayaUI as mui
+import maya.cmds as cmds
+from shiboken import wrapInstance
+
+########################################################################################### 
+
+# Main UI
+def mayaMainWindow():
+    mainWindow= mui.MQtUtil.mainWindow()
+    return wrapInstance(long(mainWindow), QWidget)
+
+class Form(QDialog):
+    def __init__(self, parent=mayaMainWindow()):
+        super(Form, self).__init__()
+        # Menu Bar
+        bar= QMenuBar()
+        
+        barFile= bar.addMenu("Edit")
+        self.fileReset= barFile.addAction("Reset      ")
+        self.fileReset.setShortcut("Ctrl + R")
+        self.connect( self.fileReset, SIGNAL("triggered()"), self.resetUI() )
+        
+        barFile.addSeparator()
+        
+        fileQuit= barFile.addAction("Quit      ")
+        self.connect( fileQuit, SIGNAL("triggered()"), SLOT("reject()") )
+
+        barHelp= bar.addMenu("Help")
+        helpReadme= barHelp.addAction("ReadMe      ")
+        self.connect( helpReadme, SIGNAL("triggered()"), self.readMeDialog() )
+          
+        # Tab Widget
+        self.tab= QTabWidget()
+        self.tab1= QWidget()
+        self.tab2= QWidget()
+        self.tab3= QWidget()
+        self.tab.addTab( self.tab1, "Prop" )
+        self.tab.addTab( self.tab2, "Biped" )
+        self.tab.addTab( self.tab3, "Quadruped" )
+        self.tab1UI()
+        self.tab2UI()
+        self.tab3UI()
+        
+        # Layout
+        mainLayout= QVBoxLayout()
+        mainLayout.addWidget( bar )
+        mainLayout.setSpacing(5)
+        mainLayout.addWidget( self.tab )
+        mainLayout.stretch(1)
+        # Window Structure
+        self.setLayout(mainLayout)
+        #self.resize( 220, 400 )
+        self.setWindowTitle("RiggingSlave v1.0")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        
+###########################################################################################         
+    
+    # Menu Function
+    def resetUI(self):
+        # reset Function
+        print "reset"
+        
+    def readMeDialog(self):
+        # Read Me Function
+        print "readMe"
+        
+###########################################################################################                
+    
+    # Prop Tab UI
+    def tab1UI(self):
+        tab1Layout= QVBoxLayout()
+        tab1Layout.addWidget( self.propGrpBox() )
+        tab1Layout.addWidget( self.ropeGrpBox() )
+        tab1Layout.addWidget( self.cRigGrpBox() )
+        self.tab1.setLayout( tab1Layout )
+        tab1Layout.addStretch(1)
+    
+    def propGrpBox(self):
+        propLayout= QGridLayout()
+        propBox= QGroupBox("Auto Prop Rig")
+        
+        rigMethodLabel= QLabel( "Rig" )
+        self.oneByOneRB= QRadioButton("&One By One")
+        self.allToOneRB= QRadioButton( "&All To One" )
+        deformLabel= QLabel( "Deformers" )
+        self.addSquashCB= QCheckBox("Add &Squash")  
+        self.propRigBttn= QPushButton( "Rig" )
+        
+        self.oneByOneRB.setChecked(True)
+        self.addSquashCB.setChecked(True)
+        
+        propLayout.addWidget( rigMethodLabel , 0, 0, 1, 3 )
+        propLayout.addWidget( self.oneByOneRB, 1, 0 )
+        propLayout.addWidget( self.allToOneRB, 1, 1 )
+        propLayout.addWidget( deformLabel, 2, 0, 1, 3 )
+        propLayout.addWidget( self.addSquashCB, 3, 0 )
+        propLayout.addWidget( self.propRigBttn, 4, 0, 1, 3 )
+        propBox.setLayout( propLayout )
+    
+        self.connect( self.oneByOneRB, SIGNAL("toggled()"), self.PropAutoRig() )
+        self.connect( self.allToOneRB, SIGNAL("toggled()"), self.PropAutoRig() )
+        self.connect( self.addSquashCB, SIGNAL("checked()"), self.PropAutoRig() )
+        self.connect( self.propRigBttn, SIGNAL("clicked()"), self.PropAutoRig() )
+        
+        return propBox
+        
+########################################################################################### 
+
+    def PropAutoRig(self):
+         self.selObj= cmds.ls(sl=1)
+         
+         try:
+             if self.oneByOneRB.isChecked() == True :
+                 for each in selObj:
+                     ctrl= cmds.circle( n= '%s_CTL' % each, ch=0 )[0]
+                     space= cmds.group( n='%s_GRP' % ctrl, em=0 )
+                     tmpCnst= cmds.parentConstraint( each, space, mo=0 )
+                     cmds.delete( tmpCnst )
+                     cmds.parentConstraint( ctrl, each,  mo=0 )
+                     cmds.scaleConstraint( ctrl, each, mo=0 )
+                     if self.addSquashCB.isChecked() == True :
+                         defrom= cmds.nonLinear( each, type="Squash" )
+                         extraAttr= cmds.addAttr( ctrl, ln= "EXTRA", at= "enum", en= "-", k=0, r=1 )
+                         cmds.setAttr( extraAttr, e=1, k=0, r=1, ch=1 )
+                         deformAttr= cmds.addAttr( ctrl, ln= "squash", at= "double", k=1, r=1 )
+                         cmds.setAttr( deformAttr, e=1, k=0, r=1, ch=1 )
+                         cmds.parentConstraint( ctrl, defrom,  mo=0 )
+                         cmds.scaleConstraint( ctrl, defrom, mo=0 )
+                     else:
+                         pass
+             else:
+                 ctrl= cmds.circle( n= '%s_CTL' % each, ch=0 )[0]
+                 space= cmds.group( n='%s_GRP' % ctrl, em=0 )
+                 tmpGrp= cmds.group( n="tmpGrp", em=1 )
+                 for each in selObj:
+                     cmds.parent( each, tmpGrp )
+                     cmds.xform( tmpGrp, e=1, cp=1 )
+                     tmpCnst= cmds.parentConstraint( tmpGrp, space, mo=0 )
+                     cmds.delete( tmpCnst )
+                     cmds.parent( each, w=1 )
+                     cmds.delete( tmpGrp )
+                     cmds.parentConstraint( ctrl, each,  mo=0 )
+                     cmds.scaleConstraint( ctrl, each, mo=0 )
+                     
+                 if self.addSquashCB.isChecked() == True :
+                     extraAttr= cmds.addAttr( ctrl, ln= "EXTRA", at= "enum", en= "-", k=0, r=1 )
+                     cmds.setAttr( extraAttr, e=1, k=0, r=1, ch=1 )
+                     deformAttr= cmds.addAttr( ctrl, ln= "squash", at= "double", k=1, r=1 )
+                     cmds.setAttr( deformAttr, e=1, k=0, r=1, ch=1 )
+                     for each in selObj:
+                         defrom= cmds.nonLinear( each, type="Squash" )
+                         cmds.parentConstraint( ctrl, defrom,  mo=0 )
+                         cmds.scaleConstraint( ctrl, defrom, mo=0 )
+                                                         
+         except:
+             cmds.warning( "Nothing is selected!!" )
+             
+            
+
+
+###########################################################################################         
+    
+    def ropeGrpBox(self):
+        ropeLayout= QGridLayout()
+        ropeBox= QGroupBox("Auto Rope Rig")
+        
+        IKSpineRB= QRadioButton("&IK Spine")
+        wireInOneRB= QRadioButton( "&Wire Deformer" )
+
+        crvLE= QLineEdit()
+        crvLE.setPlaceholderText( "Please add curve..." )
+        crvBttn= QPushButton( "Add Curve" )
+        crvBttn.setStyleSheet("background-color: #333333 ")
+        crvMenu = QMenu(self)
+        crvMenu.addAction("&Add Selected Curve")
+        crvMenu.addAction("&Poly Edge To Curve")
+        crvMenu.addAction("&Create Curve")
+        crvBttn.setMenu(crvMenu)      
+        
+        ctrlLabel= QLabel("Ctrls number:")
+        ctrlSB= QDoubleSpinBox()
+        ctrlSB.setRange( 1, 1000 )
+        
+        ropeRigBttn= QPushButton( "Rig" )
+        
+        wireInOneRB.setChecked(True)
+        
+        ropeLayout.addWidget( IKSpineRB, 0, 0 )
+        ropeLayout.addWidget( wireInOneRB, 0, 1 )
+        ropeLayout.addWidget( crvLE, 1, 0, 1, 3 )
+        ropeLayout.addWidget( crvBttn, 2, 0, 1, 3 )
+        ropeLayout.addWidget( ctrlLabel, 3, 0 )
+        ropeLayout.addWidget( ctrlSB, 3, 1 )
+        ropeLayout.addWidget( ropeRigBttn, 4, 0, 1, 3 )
+        ropeBox.setLayout( ropeLayout )
+        
+        return ropeBox
+        
+    def cRigGrpBox(self):
+        cRigLayout= QVBoxLayout()
+        cRigBox= QGroupBox( "Master Controllers")
+        
+        cRigBttn= QPushButton( "Add" )
+        cRigBttn.setStyleSheet("background-color: #777777")
+        
+        cRigLayout.addWidget( cRigBttn )
+        cRigBox.setLayout( cRigLayout )
+        
+        return cRigBox
+
+########################################################################################### 
+    
+    # Biped Tab UI
+    def tab2UI(self):
+        tab2Layout= QVBoxLayout()
+        tab2Layout.addWidget( self.boneGrpBox() )
+        tab2Layout.addWidget( self.bindSkinGrpBox() )
+        tab2Layout.addWidget( self.bipedRigGrpBox() )
+        self.tab2.setLayout( tab2Layout )
+        tab2Layout.addStretch(1)
+        
+    def boneGrpBox(self):
+        boneLayout= QGridLayout()
+        boneBox= QGroupBox("Proxy Joint")
+        
+        mirrorLabel= QLabel( "Mirror Joint?" ) 
+        yesRB= QRadioButton( "Yes" )
+        noRB= QRadioButton( "No" )
+        
+        setUpJntBttn= QPushButton("Create")
+        resetJntBttn= QPushButton("Reset")
+        resetJntBttn.setStyleSheet("background-color: #333333 ")
+        freezeJntBttn= QPushButton( "Polish" )
+        freezeJntBttn.setStyleSheet("background-color: #666666")
+        
+        yesRB.setChecked(True)
+        
+        boneLayout.addWidget( mirrorLabel, 0, 0 )
+        boneLayout.addWidget( yesRB, 0, 1 )
+        boneLayout.addWidget( noRB, 0, 2 )
+        boneLayout.addWidget( setUpJntBttn, 1, 0, 1, 3 )
+        boneLayout.addWidget( resetJntBttn, 2, 0, 1, 3 )
+        boneLayout.addWidget( freezeJntBttn, 3, 0, 1, 3 )
+        boneBox.setLayout( boneLayout )
+        
+        return boneBox
+        
+    def bindSkinGrpBox(self):
+        bindSkinLayout= QVBoxLayout()
+        bindSkinBox= QGroupBox( "Skinning" )
+        
+        bindBttn= QPushButton( "Bind Skin" )
+
+        bindSkinLayout.addWidget( bindBttn )
+        bindSkinBox.setLayout( bindSkinLayout )
+        
+        return bindSkinBox
+        
+    def bipedRigGrpBox(self):
+        bipedLayout= QVBoxLayout()
+        bipedBox= QGroupBox( "Setup Controllers" )
+        
+        setupRigBttn= QPushButton( "Setup Rig" )
+        setupRigBttn.setStyleSheet("background-color: #777777")
+        
+        bipedLayout.addWidget( self.bendyBox() )
+        bipedLayout.addWidget( setupRigBttn )
+        bipedBox.setLayout( bipedLayout )
+        
+        return bipedBox
+        
+    def bendyBox(self):
+        bendyLayout= QVBoxLayout()
+        bendyBox= QGroupBox("Bendy Setup")
+        bendyBox.setCheckable(True)
+        bendyBox.setChecked(True)
+        
+        allRB= QRadioButton( "All" )
+        armRB= QRadioButton( "Arm" )
+        legRB= QRadioButton( "Leg" )
+        
+        allRB.setChecked(True)
+        
+        bendyLayout.addWidget( allRB )
+        bendyLayout.addWidget( armRB )
+        bendyLayout.addWidget( legRB )
+        bendyBox.setLayout( bendyLayout )
+        
+        return bendyBox
+
+########################################################################################### 
+        
+    # Quadruped Tab UI
+    def tab3UI(self):
+        tab3Layout= QVBoxLayout()
+        tab3Layout.addWidget( self.qBoneGrpBox() )
+        tab3Layout.addWidget( self.qBindSkinGrpBox() )
+        tab3Layout.addWidget( self.quadrupedRigGrpBox() )
+        self.tab3.setLayout( tab3Layout )
+        tab3Layout.addStretch(1)
+        
+    def qBoneGrpBox(self):
+        qBoneLayout= QGridLayout()
+        qBoneBox= QGroupBox("Proxy Joint")
+        
+        qMirrorLabel= QLabel( "Mirror Joint?" ) 
+        qYesRB= QRadioButton( "Yes" )
+        qNoRB= QRadioButton( "No" )
+        
+        qSetUpJntBttn= QPushButton("Create")
+        qResetJntBttn= QPushButton("Reset")
+        qResetJntBttn.setStyleSheet("background-color: #333333 ")
+        qFreezeJntBttn= QPushButton( "Polish" )
+        qFreezeJntBttn.setStyleSheet("background-color: #666666")
+        
+        qYesRB.setChecked(True)
+        
+        qBoneLayout.addWidget( qMirrorLabel, 0, 0 )
+        qBoneLayout.addWidget( qYesRB, 0, 1 )
+        qBoneLayout.addWidget( qNoRB, 0, 2 )
+        qBoneLayout.addWidget( qSetUpJntBttn, 1, 0, 1, 3 )
+        qBoneLayout.addWidget( qResetJntBttn, 2, 0, 1, 3 )
+        qBoneLayout.addWidget( qFreezeJntBttn, 3, 0, 1, 3 )
+        qBoneBox.setLayout( qBoneLayout )
+        
+        return qBoneBox
+        
+    def qBindSkinGrpBox(self):
+        qBindSkinLayout= QVBoxLayout()
+        qBindSkinBox= QGroupBox( "Skinning" )
+        
+        qBindBttn= QPushButton( "Bind Skin" )
+
+        qBindSkinLayout.addWidget( qBindBttn )
+        qBindSkinBox.setLayout( qBindSkinLayout )
+        
+        return qBindSkinBox
+        
+    def quadrupedRigGrpBox(self):
+        quadrupedLayout= QVBoxLayout()
+        quadrupedBox= QGroupBox( "Setup Controllers" )
+        
+        qSetupRigBttn= QPushButton( "Setup Rig" )
+        qSetupRigBttn.setStyleSheet("background-color: #777777")
+        
+        quadrupedLayout.addWidget( self.qBendyBox() )
+        quadrupedLayout.addWidget( qSetupRigBttn )
+        quadrupedBox.setLayout( quadrupedLayout )
+        
+        return quadrupedBox
+        
+    def qBendyBox(self):
+        qBendyLayout= QVBoxLayout()
+        qBendyBox= QGroupBox("Bendy Setup")
+        qBendyBox.setCheckable(True)
+        qBendyBox.setChecked(True)
+        
+        qAllRB= QRadioButton( "All" )
+        qArmRB= QRadioButton( "Arm" )
+        qLegRB= QRadioButton( "Leg" )
+        
+        qAllRB.setChecked(True)
+        
+        qBendyLayout.addWidget( qAllRB )
+        qBendyLayout.addWidget( qArmRB )
+        qBendyLayout.addWidget( qLegRB )
+        qBendyBox.setLayout( qBendyLayout )
+        
+        return qBendyBox
+        
+
+        
+if __name__ == "__main__":
+    a= Form()
+    a.show()
