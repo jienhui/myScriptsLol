@@ -77,14 +77,14 @@ class Form(QDialog):
             vertPosX.append( vertPos[0] )
         
         # get highest value for each direction    
-        minPosX= mix( vertPosX )
+        minPosX= min( vertPosX )
         
         # use loctor as a template pivot
         tmpLoc= cmds.spaceLocator( n="tmpPivLoc" )[0]
         tmpCnst= cmds.parentConstraint( vertParent, tmpLoc, mo=0 )
         cmds.delete( tmpCnst )
         cmds.parent( tmpLoc, vertParent )
-        cmds.xform( tmpLoc, t= [mixPosX, 0 , 0] )
+        cmds.xform( tmpLoc, t= [minPosX, 0 , 0] )
         locPos= cmds.xform( tmpLoc, q=1, ws=1, t=1 )
         cmds.xform( tmpClu, piv= locPos )
         cmds.setAttr( "%s.sx" % tmpClu, 0.1 )
