@@ -109,15 +109,16 @@ class Form(QDialog):
         
         # use loctor as a template pivot
         tmpLoc= cmds.spaceLocator( n="tmpPivLoc" )[0]
-        tmpCnst= cmds.parentConstraint( vertParent, tmpLoc, mo=0 )
+        tmpLocGrp= cmds.group( n="tmpLoc_Grp", em=0 )
+        tmpCnst= cmds.parentConstraint( vertParent, tmpLocGrp, mo=0 )
         cmds.delete( tmpCnst )
-        cmds.parent( tmpLoc, vertParent )
+        cmds.parent( tmpLocGrp, vertParent )
         cmds.xform( tmpLoc, t= [0, maxPosY , 0] )
         locPos= cmds.xform( tmpLoc, q=1, ws=1, t=1 )
         cmds.xform( tmpClu, piv= locPos )
         cmds.setAttr( "%s.sy" % tmpClu, 0.1 )
         cmds.delete( vertParent, ch=1 )
-        cmds.delete( tmpLoc )
+        cmds.delete( tmpLocGrp )
         cmds.select( selVert )
         
     def posZ(self):
@@ -179,5 +180,3 @@ class Form(QDialog):
 if __name__ == "__main__":
     haha= Form()
     haha.show()
-        
-        
