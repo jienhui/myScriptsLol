@@ -80,25 +80,18 @@ class Form(QDialog):
     def propGrpBox(self):
         propLayout= QGridLayout()
         propBox= QGroupBox("Auto Prop Rig")
-        
-        rigMethodLabel= QLabel( "Rig" )
-        self.oneByOneRB= QRadioButton("&One By One")
-        self.allToOneRB= QRadioButton( "&All To One" )
+
         ctrkMLabel= QLabel( "Control Method" )
-        self.addSkinRB= QRadioButton("&Skin")
+        self.addSkinRB= QRadioButton("&Add Joint")
         self.addCnstRB= QRadioButton("&Constraint")
         self.propRigBttn= QPushButton( "Rig" )
         
-        self.oneByOneRB.setChecked(True)
-        self.addSkinRB.setChecked(True)
+        self.addCnstRB.setChecked(True)
         
-        propLayout.addWidget( rigMethodLabel , 0, 0, 1, 3 )
-        propLayout.addWidget( self.oneByOneRB, 1, 0 )
-        propLayout.addWidget( self.allToOneRB, 1, 1 )
-        propLayout.addWidget( ctrkMLabel, 2, 0, 1, 3 )
-        propLayout.addWidget( self.addSkinRB, 3, 0 )
-        propLayout.addWidget( self.addCnstRB, 3, 1 )
-        propLayout.addWidget( self.propRigBttn, 4, 0, 1, 3 )
+        propLayout.addWidget( ctrkMLabel, 0, 0, 1, 3 )
+        propLayout.addWidget( self.addSkinRB, 1, 0 )
+        propLayout.addWidget( self.addCnstRB, 1, 1 )
+        propLayout.addWidget( self.propRigBttn, 2, 0, 1, 3 )
         propBox.setLayout( propLayout )
     
         self.propRigBttn.clicked.connect( self.PropAutoRig )
@@ -112,39 +105,51 @@ class Form(QDialog):
          cmds.select(cl=1)
          
          if self.addSkinRB.isChecked() == True :
-             jntGrp= cmds.group( n="JNT_GRP", em=1 )
-         
-         ctrlGrp= cmds.group( n="CTL_GRP", em=1 )
-         
-         if self.oneByOneRB.isChecked() == True :
-             if len(selObj) > 0 :
-                 for each in selObj:
-                     objCentre= cmds.objectCenter( each, gl= True )
-                     rtPiv= cmds.xform( each, q=True, rp= True, ws=True )
-                     tmpLoc= cmds.spaceLocator( n="TmpLoc" )[0]
-                     cmds.xform( tmpLoc, t= objCentre, ro= rtPiv )
-                     cmds.select(cl=1)
-                     ctrl= cmds.circle( n= '%s_CTL' % each, nr=(0,1,0), ch=0 )[0]
-                     space= cmds.group( n='%s_GRP' % ctrl, em=0 )
-                     tmpCnst= cmds.parentConstraint( tmpLoc, space, mo=0 )
-                     cmds.delete( tmpCnst, tmpLoc )
-                     cmds.parent( space, ctrlGrp )
-                     if self.addSkinRB.isChecked() == True :
-                         jnt= cmds.joint( n="%s_JNT" % each )
-                         cmds.parent( jnt, jntGrp )
-                         tmpCnst= cmds.parentConstraint( space, jnt, mo=0 )
-                         cmds.delete( tmpCnst )
-                         cmds.skinCluster( jnt, each, n= "%sShape_skinCluster" % each )
-                         cmds.parentConstraint( ctrl, jnt, mo=0 )
-                         cmds.scaleConstraint( ctrl, jnt, mo=0 )                      
-                     else:
-                         cmds.parentConstraint( ctrl, each,  mo=0 )
-                         cmds.scaleConstraint( ctrl, each, mo=0 )
+             if cmds.objExists( "JNT_GRP" ) == True :
+                 pass
              else:
-                 cmds.warning( "Nothing is selected!!!" )                                                      
-             
-            
+                 jntGrp= cmds.group( n="JNT_GRP", em=1 )
+         
+         if cmds.objExists( "CTL_GRP" ) == True :
+             pass
+         else:
+             ctrlGrp= cmds.group( n="CTL_GRP", em=1 )
 
+         if len(selObj) > 0 :
+             for each in selObj:
+                 objCentre= cmds.objectCenter( each, gl= True )
+                 rtPiv= cmds.xform( each, q=True, ro= True, ws=True )
+                 tmpLoc= cmds.spaceLocator( n="TmpLoc" )[0]
+                 cmds.xform( tmpLoc, t= objCentre, ro= rtPiv)
+                 cmds.select(cl=1)
+                 ctrl= cmds.circle( n= '%s_CTL' % each, nr=(0,1,0), ch=0 )[0]
+                 cmds.setAttr( "%s.v" % ctrl, l=1, k=0, ch=0 )
+                 cmds.addAttr( ctrl, ln= "extra", at= "enum", en= "________")
+                 cmds.setAttr( "%s.extra" % ctrl, e=True, ch=True, l=True, k=True )
+                 cmds.addAttr( ctrl, ln= "geoVisibility", at= "long", min=0, max=1, dv=1 )
+                 cmds.setAttr( "%s.geoVisibility" % ctrl,e= True, k=True )
+                 cmds.setAttr( '%s.overrideEnabled' % ctrl, 1 )
+                 cmds.setAttr( '%s.overrideColor' % ctrl, 17 )
+                 space= cmds.group( n='%s_GRP' % ctrl, em=0 )
+                 tmpCnst= cmds.parentConstraint( tmpLoc, space, mo=0 )
+                 cmds.delete( tmpCnst, tmpLoc )
+                 cmds.parent( space, "CTL_GRP" )
+                 if self.addSkinRB.isChecked() == True :
+                     jnt= cmds.joint( n="%s_JNT" % each )
+                     cmds.parent( jnt, "JNT_GRP" )
+                     tmpCnst= cmds.parentConstraint( space, jnt, mo=0 )
+                     cmds.delete( tmpCnst )
+                     cmds.skinCluster( jnt, each, n= "%sShape_skinCluster" % each )
+                     cmds.parentConstraint( ctrl, jnt, mo=0 )
+                     cmds.scaleConstraint( ctrl, jnt, mo=0 )
+                     cmds.connectAttr( "%s.geoVisibility" % ctrl, "%s.v" % each )                     
+                 else:
+                     cmds.parentConstraint( ctrl, each,  mo=1 )
+                     cmds.scaleConstraint( ctrl, each, mo=1 )
+                     cmds.connectAttr( "%s.geoVisibility" % ctrl, "%s.v" % each )  
+         else:
+             cmds.warning( "Nothing is selected!!!" )
+            
 
 ###########################################################################################         
     
