@@ -60,7 +60,17 @@ class Form(QDialog):
     # Menu Function
     def resetUI(self):
         # reset Function
-        print "reset"
+        self.addCnstRB.setChecked(True)
+        self.wireInOneRB.setChecked(True)
+        self.crvLE.clear()
+        self.ctrlSB.setValue( 3 )
+        self.yesRB.setChecked(True)
+        self.qYesRB.setChecked(True)
+        self.bendyBox.setChecked(True)
+        self.allRB.setChecked(True)
+        self.qBendyBox.setChecked(True)
+        self.qAllRB.setChecked(True)
+        print "Tool Reset.",
         
     def readMeDialog(self):
         # Read Me Function
@@ -146,7 +156,8 @@ class Form(QDialog):
                  else:
                      cmds.parentConstraint( ctrl, each,  mo=1 )
                      cmds.scaleConstraint( ctrl, each, mo=1 )
-                     cmds.connectAttr( "%s.geoVisibility" % ctrl, "%s.v" % each )  
+                     cmds.connectAttr( "%s.geoVisibility" % ctrl, "%s.v" % each )
+                 print "Added Rig To All Selected Items. ",
          else:
              cmds.warning( "Nothing is selected!!!" )
             
@@ -158,10 +169,10 @@ class Form(QDialog):
         ropeBox= QGroupBox("Auto Rope Rig")
         
         IKSpineRB= QRadioButton("&IK Spine")
-        wireInOneRB= QRadioButton( "&Wire Deformer" )
+        self.wireInOneRB= QRadioButton( "&Wire Deformer" )
 
-        crvLE= QLineEdit()
-        crvLE.setPlaceholderText( "Please add curve..." )
+        self.crvLE= QLineEdit()
+        self.crvLE.setPlaceholderText( "Please add curve..." )
         crvBttn= QPushButton( "Add Curve" )
         crvBttn.setStyleSheet("background-color: #333333 ")
         crvMenu = QMenu(self)
@@ -171,19 +182,19 @@ class Form(QDialog):
         crvBttn.setMenu(crvMenu)      
         
         ctrlLabel= QLabel("Ctrls number:")
-        ctrlSB= QDoubleSpinBox()
-        ctrlSB.setRange( 1, 1000 )
+        self.ctrlSB= QDoubleSpinBox()
+        self.ctrlSB.setRange( 3, 1000 )
         
         ropeRigBttn= QPushButton( "Rig" )
         
-        wireInOneRB.setChecked(True)
+        self.wireInOneRB.setChecked(True)
         
         ropeLayout.addWidget( IKSpineRB, 0, 0 )
-        ropeLayout.addWidget( wireInOneRB, 0, 1 )
-        ropeLayout.addWidget( crvLE, 1, 0, 1, 3 )
+        ropeLayout.addWidget( self.wireInOneRB, 0, 1 )
+        ropeLayout.addWidget( self.crvLE, 1, 0, 1, 3 )
         ropeLayout.addWidget( crvBttn, 2, 0, 1, 3 )
         ropeLayout.addWidget( ctrlLabel, 3, 0 )
-        ropeLayout.addWidget( ctrlSB, 3, 1 )
+        ropeLayout.addWidget( self.ctrlSB, 3, 1 )
         ropeLayout.addWidget( ropeRigBttn, 4, 0, 1, 3 )
         ropeBox.setLayout( ropeLayout )
         
@@ -217,8 +228,8 @@ class Form(QDialog):
         boneBox= QGroupBox("Proxy Joint")
         
         mirrorLabel= QLabel( "Mirror Joint?" ) 
-        yesRB= QRadioButton( "Yes" )
-        noRB= QRadioButton( "No" )
+        self.yesRB= QRadioButton( "Yes" )
+        self.noRB= QRadioButton( "No" )
         
         setUpJntBttn= QPushButton("Create")
         resetJntBttn= QPushButton("Reset")
@@ -226,11 +237,11 @@ class Form(QDialog):
         freezeJntBttn= QPushButton( "Polish" )
         freezeJntBttn.setStyleSheet("background-color: #666666")
         
-        yesRB.setChecked(True)
+        self.yesRB.setChecked(True)
         
         boneLayout.addWidget( mirrorLabel, 0, 0 )
-        boneLayout.addWidget( yesRB, 0, 1 )
-        boneLayout.addWidget( noRB, 0, 2 )
+        boneLayout.addWidget( self.yesRB, 0, 1 )
+        boneLayout.addWidget( self.noRB, 0, 2 )
         boneLayout.addWidget( setUpJntBttn, 1, 0, 1, 3 )
         boneLayout.addWidget( resetJntBttn, 2, 0, 1, 3 )
         boneLayout.addWidget( freezeJntBttn, 3, 0, 1, 3 )
@@ -264,22 +275,22 @@ class Form(QDialog):
         
     def bendyBox(self):
         bendyLayout= QVBoxLayout()
-        bendyBox= QGroupBox("Bendy Setup")
-        bendyBox.setCheckable(True)
-        bendyBox.setChecked(True)
+        self.bendyBox= QGroupBox("Bendy Setup")
+        self.bendyBox.setCheckable(True)
+        self.bendyBox.setChecked(True)
         
-        allRB= QRadioButton( "All" )
-        armRB= QRadioButton( "Arm" )
-        legRB= QRadioButton( "Leg" )
+        self.allRB= QRadioButton( "All" )
+        self.armRB= QRadioButton( "Arm" )
+        self.legRB= QRadioButton( "Leg" )
         
-        allRB.setChecked(True)
+        self.allRB.setChecked(True)
         
-        bendyLayout.addWidget( allRB )
-        bendyLayout.addWidget( armRB )
-        bendyLayout.addWidget( legRB )
-        bendyBox.setLayout( bendyLayout )
+        bendyLayout.addWidget( self.allRB )
+        bendyLayout.addWidget( self.armRB )
+        bendyLayout.addWidget( self.legRB )
+        self.bendyBox.setLayout( bendyLayout )
         
-        return bendyBox
+        return self.bendyBox
 
 ########################################################################################### 
         
@@ -297,8 +308,8 @@ class Form(QDialog):
         qBoneBox= QGroupBox("Proxy Joint")
         
         qMirrorLabel= QLabel( "Mirror Joint?" ) 
-        qYesRB= QRadioButton( "Yes" )
-        qNoRB= QRadioButton( "No" )
+        self.qYesRB= QRadioButton( "Yes" )
+        self.qNoRB= QRadioButton( "No" )
         
         qSetUpJntBttn= QPushButton("Create")
         qResetJntBttn= QPushButton("Reset")
@@ -306,11 +317,11 @@ class Form(QDialog):
         qFreezeJntBttn= QPushButton( "Polish" )
         qFreezeJntBttn.setStyleSheet("background-color: #666666")
         
-        qYesRB.setChecked(True)
+        self.qYesRB.setChecked(True)
         
         qBoneLayout.addWidget( qMirrorLabel, 0, 0 )
-        qBoneLayout.addWidget( qYesRB, 0, 1 )
-        qBoneLayout.addWidget( qNoRB, 0, 2 )
+        qBoneLayout.addWidget( self.qYesRB, 0, 1 )
+        qBoneLayout.addWidget( self.qNoRB, 0, 2 )
         qBoneLayout.addWidget( qSetUpJntBttn, 1, 0, 1, 3 )
         qBoneLayout.addWidget( qResetJntBttn, 2, 0, 1, 3 )
         qBoneLayout.addWidget( qFreezeJntBttn, 3, 0, 1, 3 )
@@ -344,22 +355,22 @@ class Form(QDialog):
         
     def qBendyBox(self):
         qBendyLayout= QVBoxLayout()
-        qBendyBox= QGroupBox("Bendy Setup")
-        qBendyBox.setCheckable(True)
-        qBendyBox.setChecked(True)
+        self.qBendyBox= QGroupBox("Bendy Setup")
+        self.qBendyBox.setCheckable(True)
+        self.qBendyBox.setChecked(True)
         
-        qAllRB= QRadioButton( "All" )
-        qArmRB= QRadioButton( "Arm" )
-        qLegRB= QRadioButton( "Leg" )
+        self.qAllRB= QRadioButton( "All" )
+        self.qArmRB= QRadioButton( "Arm" )
+        self.qLegRB= QRadioButton( "Leg" )
         
-        qAllRB.setChecked(True)
+        self.qAllRB.setChecked(True)
         
-        qBendyLayout.addWidget( qAllRB )
-        qBendyLayout.addWidget( qArmRB )
-        qBendyLayout.addWidget( qLegRB )
-        qBendyBox.setLayout( qBendyLayout )
+        qBendyLayout.addWidget( self.qAllRB )
+        qBendyLayout.addWidget( self.qArmRB )
+        qBendyLayout.addWidget( self.qLegRB )
+        self.qBendyBox.setLayout( qBendyLayout )
         
-        return qBendyBox
+        return self.qBendyBox
         
 
         
