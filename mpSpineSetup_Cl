@@ -1,0 +1,146 @@
+import maya.cmds as cmds
+
+    ####################################################################################    Return List Notes    #################################################################################
+    #                                                                                                                                                                                            #
+    #    1. self.spineNodesList= [ 'spine_CI01', 'spine_stVolume_pma01', 'spine_autoStretch_con01', 'spine_stretchy_DIV_MD01', 'spine_stretchy_POW_MD01', 'spine_stretchy_DIV_MD02' ]            #
+    #    2. self.ikCTLList= [ 'body_IK_CTL01', 'body_IK_CTL02', 'body_IK_CTL03' ]                                                                                                                #
+    #    3. self.drvJntList= [ 'body_Drv01', 'body_Drv02', 'body_Drv03' ]                                                                                                                        #
+    #    4. self.MPList= [ 'body_Jnt01_MP', 'body_Jnt02_MP', 'body_Jnt03_MP' ]                                                                                                                   #
+    #    4. self.jntGrpList= [ 'body_Jnt01_GRP', 'body_Jnt02_GRP', 'body_Jnt03_GRP' ]                                                                                                            #
+    #                                                                                                                                                                                            #
+    ##############################################################################################################################################################################################
+    
+###### Motion Path Spine Setup Class ######
+class mpSpineSetup_Cl():
+    def __init__( self, jntA, jntB, jntC ):
+        self.jntA= jntA
+        self.jntB= jntB
+        self.jntC= jntC
+        self.mpSpineSetup_Fn()
+        
+    # Motion Path Spine Setup Function
+    def mpSpineSetup_Fn(self):
+        
+        self.MPList= []
+        self.drvJntList= []
+        self.jntGrpList= []
+        self.spineNodesList= []
+        self.ikCTLList= []
+        self.spineCTLGrp= cmds.group( n= "spine_CTL_GRP", em=1 )
+        self.aimLocGrp= cmds.group( n="spine_aimLoc_GRP", em=1 )
+        self.spineJntGrp= cmds.group( n="spine_Jnt_GRP", em=1 )
+        self.spineDrvJntGrp= cmds.group( n="spine_Drv_GRP", em=1 )
+        self.spineExtra= cmds.group( n="spine_extraNodes", em=1 )
+        cmds.parent( self.aimLocGrp, self.spineDrvJntGrp, self.spineExtra )
+        self.selJnt= [ self.jntA, self.jntB, self.jntC ]
+        
+        # create motion path curve
+        jntAPos= cmds.xform( self.jntA, q=1, t=1, ws=1 )
+        jntBPos= cmds.xform( self.jntB, q=1, t=1, ws=1 )
+        jntCPos= cmds.xform( self.jntC, q=1, t=1, ws=1 )
+        newCrv= cmds.curve( d=2, p= [(jntAPos), (jntBPos), (jntCPos)] )
+        self.spineCrv= cmds.rename( newCrv, "spine_crv" )
+        cmds.parent( self.spineCrv, self.spineExtra )
+        cmds.select( cl=1 )
+
+        for each in self.selJnt:
+            # create group for each joints
+            self.jntGrp= cmds.group( n= "%s_GRP" % each, em=1 )
+            self.jntGrpList.append( self.jntGrp )
+            tmpCnst= cmds.parentConstraint( each, self.jntGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.parent( each, self.jntGrp )
+            cmds.parent( self.jntGrp, self.spineJntGrp )
+            cmds.select( cl=1 )
+            # create spine drv joint
+            self.drvJnt= cmds.joint( n=str(each).replace("Jnt", "Drv") )
+            self.drvJntList.append( self.drvJnt )
+            tmpCnst= cmds.parentConstraint( each, self.drvJnt, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.select( cl=1 )
+            cmds.parent( self.drvJnt, self.spineDrvJntGrp )
+            # set up aimLoc
+            self.loc= cmds.spaceLocator( n="%s_aimUp_loc" % each )[0]
+            self.locGrp= cmds.group( n="%s_GRP" % self.loc, em=0 )
+            cmds.parent( self.locGrp, self.aimLocGrp )
+            tmpCnst= cmds.parentConstraint( each, self.locGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.setAttr( "%s.tz" % self.locGrp, 2.5 )
+            # create controller for drv joint
+            self.ikCTL= cmds.circle( n= str(self.drvJnt).replace("Drv","IK_CTL"), nr= [0,1,0], r=30,ch=0 )[0]
+            self.ikCTLList.append( self.ikCTL )
+            self.ikCTLGRP= cmds.group( n="%s_GRP" % self.ikCTL, em=0 )
+            tmpCnst= cmds.parentConstraint( each, self.ikCTLGRP, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.parentConstraint( self.ikCTL, self.drvJnt, mo=0 )
+            cmds.scaleConstraint( self.ikCTL, self.drvJnt, mo=0 )
+            cmds.parentConstraint( self.ikCTL, self.locGrp, mo=0 )
+            cmds.scaleConstraint( self.ikCTL, self.locGrp, mo=0 )
+            cmds.parent( self.ikCTLGRP, self.spineCTLGrp )
+            # create Motion Path nodes
+            self.MP= cmds.createNode( "motionPath", n="%s_MP" % each )
+            self.MPList.append( self.MP )
+            cmds.setAttr( "%s.worldUpType" % self.MP, 1 )
+            cmds.setAttr("%s.fractionMode" % self.MP, 1 )
+            cmds.connectAttr( "%sShape.worldSpace[0]" % self.spineCrv, "%s.geometryPath" % self.MP )
+            cmds.connectAttr( "%s.worldMatrix[0]" % self.loc, "%s.worldUpMatrix" % self.MP )
+            cmds.connectAttr( "%s.allCoordinates" % self.MP, "%s.translate" % self.jntGrp )
+            cmds.connectAttr( "%s.rotate" % self.MP, "%s.rotate" % self.jntGrp )
+            cmds.connectAttr( "%s.rotateOrder" % self.MP, "%s.rotateOrder" % self.jntGrp )
+            cmds.connectAttr( "%s.message" % self.MP, "%s.specifiedManipLocation" % self.jntGrp )
+            
+        # create stretchy spine
+        self.spineCI= cmds.createNode( "curveInfo", n="spine_CI01" )
+        self.spineNodesList.append( self.spineCI )
+        cmds.connectAttr( "%s.worldSpace[0]" % self.spineCrv, "%s.inputCurve" % self.spineCI )
+        self.curveLength= cmds.getAttr( "%s.arcLength" % self.spineCI )
+        self.spineVolumePMA= cmds.createNode( "plusMinusAverage", n="spine_stVolume_pma01" )
+        self.spineNodesList.append( self.spineVolumePMA )
+        cmds.setAttr( "%s.operation" % self.spineVolumePMA,1 )
+        cmds.setAttr( "%s.input1D[1]" % self.spineVolumePMA,0 )
+        cmds.connectAttr( "%s.arcLength" % self.spineCI, "%s.input1D[0]" % self.spineVolumePMA )
+        self.spineCon= cmds.createNode( "condition", n="spine_autoStretch_con01" )
+        self.spineNodesList.append( self.spineCon )
+        cmds.setAttr( "%s.firstTerm" % self.spineCon, 1 )
+        cmds.setAttr( "%s.secondTerm" % self.spineCon, 1 )
+        cmds.setAttr( "%s.operation" % self.spineCon, 0 )
+        cmds.setAttr( "%s.colorIfFalseR" % self.spineCon, self.curveLength )
+        cmds.connectAttr( "%s.output1D" % self.spineVolumePMA, "%s.colorIfTrueR" % self.spineCon )
+        self.stretchMD01= cmds.createNode( "multiplyDivide", n="spine_stretchy_DIV_MD01" )
+        self.spineNodesList.append( self.stretchMD01 )
+        cmds.setAttr( "%s.operation" % self.stretchMD01, 2 )
+        cmds.setAttr( "%s.input2X" % self.stretchMD01, self.curveLength )
+        cmds.connectAttr( "%s.outColorR" % self.spineCon, "%s.input1X" % self.stretchMD01 )
+        self.stretchMD02= cmds.createNode( "multiplyDivide", n="spine_stretchy_POW_MD01" )
+        self.spineNodesList.append( self.stretchMD02 )
+        cmds.setAttr( "%s.operation" % self.stretchMD02, 3 )
+        cmds.setAttr( "%s.input2X" % self.stretchMD02, 0.9 )
+        cmds.setAttr( "%s.input2Y" % self.stretchMD02, 0.7 )
+        cmds.setAttr( "%s.input2Z" % self.stretchMD02, 0.5 )
+        cmds.connectAttr( "%s.outputX" % self.stretchMD01, "%s.input1X" % self.stretchMD02 )
+        cmds.connectAttr( "%s.outputX" % self.stretchMD01, "%s.input1Y" % self.stretchMD02 )
+        cmds.connectAttr( "%s.outputX" % self.stretchMD01, "%s.input1Z" % self.stretchMD02 )
+        self.stretchMD03= cmds.createNode( "multiplyDivide", n="spine_stretchy_DIV_MD02" )
+        self.spineNodesList.append( self.stretchMD03 )
+        cmds.setAttr( "%s.operation" % self.stretchMD03, 2 )
+        cmds.setAttr( "%s.input1X" % self.stretchMD03, 1 )
+        cmds.setAttr( "%s.input1Y" % self.stretchMD03, 1 )
+        cmds.setAttr( "%s.input1Z" % self.stretchMD03, 1 )
+        cmds.connectAttr( "%s.output" % self.stretchMD02, "%s.input2" % self.stretchMD03 )
+        cmds.connectAttr( "%s.outputY" % self.stretchMD03, "%s.sx" % self.jntGrpList[0] )
+        cmds.connectAttr( "%s.outputY" % self.stretchMD03, "%s.sz" % self.jntGrpList[0] )
+        cmds.connectAttr( "%s.outputZ" % self.stretchMD03, "%s.sx" % self.jntGrpList[2] )
+        cmds.connectAttr( "%s.outputZ" % self.stretchMD03, "%s.sz" % self.jntGrpList[2] )
+        
+        # relocate joint groups
+        cmds.setAttr( "%s.uValue" % self.MPList[0], 0 )
+        cmds.setAttr( "%s.uValue" % self.MPList[1], 0.5 )
+        cmds.setAttr( "%s.uValue" % self.MPList[2], 1 )
+        
+        # skin spine curve
+        cmds.skinCluster( self.drvJntList[0], self.drvJntList[1], self.drvJntList[2], self.spineCrv, mi=2, dr=2, n= "%sShape_skinCluster" % self.spineCrv )
+        
+        return [ self.spineNodesList, self.ikCTLList, self.curveLength ]
+        
+if __name__ == "__main__":
+    M= mpSpineSetup_Cl( "body_Jnt01", "body_Jnt02", "body_Jnt03" )
