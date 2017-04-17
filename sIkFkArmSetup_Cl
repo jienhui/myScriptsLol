@@ -276,7 +276,6 @@ class sIkFkArmSetup_Cl():
         armIKAx= cmds.group( n= "%s_ax" % self.armIkCTL, em=0 )
         allCTLGRP.append( armIKAx )
         self.armIkCTLSpace= cmds.group( n= "%s_GRP" % self.armIkCTL, em=0  )
-        allCTLGRP.append( self.armIkCTLSpace )
         tmpCnst= cmds.parentConstraint( self.armIkJnt[-1], self.armIkCTLSpace, mo=0 )
         cmds.delete( tmpCnst )
         cmds.parentConstraint( self.armIkCTL, self.armikH, mo=1 )
