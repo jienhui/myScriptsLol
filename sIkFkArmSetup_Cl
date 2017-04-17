@@ -209,7 +209,6 @@ class sIkFkArmSetup_Cl():
         cmds.setAttr( "%sShape.overrideEnabled" % self.clvCTL, 1 )
         cmds.setAttr( "%sShape.overrideColor" % self.clvCTL, 17 )
         self.clvCTLGRP= cmds.group( n= "%s_GRP" % self.clvCTL, em=0 )
-        allCTLGRP.append( self.clvCTLGRP )
         tmpCnst= cmds.parentConstraint( self.clvJnt, self.clvCTLGRP, mo=0 )
         cmds.delete( tmpCnst )
         cmds.parentConstraint( self.clvCTL, self.clvJnt, mo=0 )
