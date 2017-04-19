@@ -85,6 +85,7 @@ class sIkFkArmSetup_Cl():
         cmds.delete( self.armIkDrvJnt[-1] )
         self.armIkDrvJnt.remove(self.armIkDrvJnt[-1])
         cmds.setAttr( "%s.v" % self.armIkDrvJnt[0], 0 )
+        cmds.setAttr( "%s.template" % self.armIkDrvJnt[0], 1 )
         
         # FK joints
         for each in self.armJnt:
@@ -109,10 +110,10 @@ class sIkFkArmSetup_Cl():
             cmds.setAttr( "%s.preferredAngleY" % self.armIkJnt[1], -90 ) 
             cmds.setAttr( "%s.preferredAngleY" % self.armIkDrvJnt[1], -90 )   
         else:
-            cmds.setAttr( "%s.preferredAngleY" % self.armJnt[1], 90 )
-            cmds.setAttr( "%s.preferredAngleY" % self.armFkJnt[1], 90 )
-            cmds.setAttr( "%s.preferredAngleY" % self.armIkJnt[1], 90 )
-            cmds.setAttr( "%s.preferredAngleY" % self.armIkDrvJnt[1], 90 )
+            cmds.setAttr( "%s.preferredAngleX" % self.armJnt[1], 90 )
+            cmds.setAttr( "%s.preferredAngleX" % self.armFkJnt[1], 90 )
+            cmds.setAttr( "%s.preferredAngleX" % self.armIkJnt[1], 90 )
+            cmds.setAttr( "%s.preferredAngleX" % self.armIkDrvJnt[1], 90 )
         
         # Secondary skin joints
         self.rootExtJnt= cmds.joint( n= str(self.shdJnt).replace( "_Jnt", "_extra_Jnt" ) )
@@ -158,8 +159,7 @@ class sIkFkArmSetup_Cl():
         cmds.select( self.skinJnt )
         cmds.sets( n="%s_skinJNT" % self.prefix )
         cmds.select( cl=1 )
-        
-        cmds.parent( self.clvJnt, self.armJnt[0], self.armIkJnt[0], self.armIkDrvJnt[0], self.armFkJnt[0], self.armJntGRP )
+        cmds.parent( self.clvJnt, self.armIkDrvJnt[0], self.armJntGRP )
         
         # Setup FK
         armFKSdkList= []
@@ -251,25 +251,25 @@ class sIkFkArmSetup_Cl():
         #cmds.addAttr( self.armIkCTL, ln= "twist",  at= "double", dv= 0 )
         #cmds.setAttr( "%s.twist" % self.armIkCTL, e=1, cb=1 )
         #cmds.setAttr( "%s.twist" % self.armIkCTL, k=1 )
-        #if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
-        #    cmds.addAttr( self.armIkCTL, ln= "elbowLock",  at= "double", min= -10, max= 10, dv= 0 )
-        #    cmds.setAttr( "%s.elbowLock" % self.armIkCTL, e=1, cb=1 )
-        #    cmds.setAttr( "%s.elbowLock" % self.armIkCTL, k=1 )
-        #else:
-        #    cmds.addAttr( self.armIkCTL, ln= "kneeLock",  at= "double", min= -10, max= 10, dv= 0 )
-        #    cmds.setAttr( "%s.kneeLock" % self.armIkCTL, e=1, cb=1 )
-        #    cmds.setAttr( "%s.kneeLock" % self.armIkCTL, k=1 )
+        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
+            cmds.addAttr( self.armIkCTL, ln= "elbowLock",  at= "double", min= 0, max= 1, dv= 0 )
+            cmds.setAttr( "%s.elbowLock" % self.armIkCTL, e=1, cb=1 )
+            cmds.setAttr( "%s.elbowLock" % self.armIkCTL, k=1 )
+        else:
+            cmds.addAttr( self.armIkCTL, ln= "kneeLock",  at= "double", min= 0, max= 1, dv= 0 )
+            cmds.setAttr( "%s.kneeLock" % self.armIkCTL, e=1, cb=1 )
+            cmds.setAttr( "%s.kneeLock" % self.armIkCTL, k=1 )
         cmds.addAttr( self.armIkCTL, ln= "length",  at= "double", min= -10, max= 10, dv= 0 )
         cmds.setAttr( "%s.length" % self.armIkCTL, e=1, cb=1 )
         cmds.setAttr( "%s.length" % self.armIkCTL, k=1 )
         cmds.addAttr( self.armIkCTL, ln= "_____________",  at= "enum", en= "________:" )
-        cmds.setAttr( "%s._____________" % self.armIkCTL, e=1, cb=0, l=1 )    # _____________ is locked now
-        cmds.addAttr( self.armIkCTL, ln= "pVVisibility", nn="PV Visibility", at= "long", min= 0, max= 1, dv= 1 )
+        cmds.setAttr( "%s._____________" % self.armIkCTL, e=1, cb=1, l=1 )
+        cmds.addAttr( self.armIkCTL, ln= "pVVisibility", nn="PV Visibility", at= "long", min= 0, max= 1, dv= 0 )
         cmds.setAttr( "%s.pVVisibility" % self.armIkCTL, e=1, cb=1 )
-        cmds.setAttr( "%s.pVVisibility" % self.armIkCTL, l=1, k=0, cb=0 )    # pvVis is locked now
+        cmds.setAttr( "%s.pVVisibility" % self.armIkCTL, l=0, k=0, cb=0 )
         cmds.addAttr( self.armIkCTL, ln= "PV",  at= "double", dv= 0 )
         cmds.setAttr( "%s.PV" % self.armIkCTL, e=1, cb=1 )
-        cmds.setAttr( "%s.PV" % self.armIkCTL, l=1, k=0, cb=0 )    # pv is locked now
+        cmds.setAttr( "%s.PV" % self.armIkCTL, k=1 )
         armIKSdk= cmds.group( n= "%s_sdk" % self.armIkCTL, em=0 )
         allCTLGRP.append( armIKSdk )
         armIKAx= cmds.group( n= "%s_ax" % self.armIkCTL, em=0 )
@@ -317,7 +317,7 @@ class sIkFkArmSetup_Cl():
         else:
             pvLocGrpTz= (cmds.getAttr( "%s.tz" % self.pvLocGRP )) + 50
             cmds.setAttr( "%s.tz" % self.pvLocGRP, pvLocGrpTz )      
-        cmds.poleVectorConstraint( self.pvLoc, self.armikH )
+        #cmds.poleVectorConstraint( self.pvLoc, self.armikH )
         cmds.parent( self.pvLocGRP, self.locGRP )
         cmds.setAttr( "%s.v" % self.pvLocGRP )
         
@@ -329,6 +329,114 @@ class sIkFkArmSetup_Cl():
         cmds.setAttr("%s.poleVectorY" % self.armDrvIkH, ikPvY )
         cmds.setAttr("%s.poleVectorZ" % self.armDrvIkH, ikPvZ )
         
+        # Setup Dictance Tools
+        dictLocA= cmds.spaceLocator( n= "%s_dict01_loc" % self.prefix )[0]
+        dictLocAGrp= cmds.group( n= "%s_GRP" % dictLocA, em=0  )
+        tmpCnst= cmds.parentConstraint( self.shdJnt, dictLocAGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( self.shdIkCTL, dictLocAGrp, mo=0 )
+        cmds.setAttr( "%s.v" % dictLocAGrp, 0 )
+        dictLocB= cmds.spaceLocator( n= "%s_dict02_loc" % self.prefix )[0]
+        dictLocBGrp= cmds.group( n= "%s_GRP" % dictLocB, em=0  )
+        tmpCnst= cmds.parentConstraint( self.elbJnt, dictLocBGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        dictLocBCnst= cmds.parentConstraint( self.armIkDrvJnt[1], dictLocBGrp, mo=1 )[0]
+        ikblendCon= cmds.createNode( "condition", n= "ikDrv_blend_con01" )        # ikblendCon
+        cmds.connectAttr( "%s.elbowLock" % self.armIkCTL, "%s.firstTerm" % ikblendCon )
+        cmds.setAttr( "%s.secondTerm" % ikblendCon, 1 )
+        cmds.setAttr( "%s.colorIfTrueR" % ikblendCon, 0 )
+        cmds.setAttr( "%s.colorIfFalseR" % ikblendCon, 1 )
+        cmds.setAttr( "%s.operation" % ikblendCon, 0 )
+        cmds.connectAttr( "%s.outColorR" % ikblendCon, "%s.ikBlend" % self.armDrvIkH )
+        cmds.setAttr( "%s.v" % dictLocBGrp, 0 )
+        dictLocC= cmds.spaceLocator( n= "%s_dict03_loc" % self.prefix )[0]
+        dictLocCGrp= cmds.group( n= "%s_GRP" % dictLocC, em=0  )
+        tmpCnst= cmds.parentConstraint( self.wstJnt, dictLocCGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( self.armIkCTL, dictLocCGrp, mo=0 )
+        cmds.setAttr( "%s.v" % dictLocCGrp, 0 )
+        cmds.parent( dictLocAGrp, dictLocBGrp, dictLocCGrp, self.locGRP )
+        cmds.poleVectorConstraint( self.pvLoc, self.armikH )
+        ikpvX= cmds.getAttr( "%s.poleVectorX" % self.armikH )
+        ikpvY= cmds.getAttr( "%s.poleVectorY" % self.armikH )
+        ikpvZ= cmds.getAttr( "%s.poleVectorZ" % self.armikH )
+        cmds.setAttr( "%s.poleVectorX" % self.armDrvIkH, ikpvX )
+        cmds.setAttr( "%s.poleVectorY" % self.armDrvIkH, ikpvY )
+        cmds.setAttr( "%s.poleVectorZ" % self.armDrvIkH, ikpvZ )
+        dictNodeA= cmds.createNode( "distanceBetween", n= "%s_dict01" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocA, "%s.point1" % dictNodeA )
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocC, "%s.point2" % dictNodeA )
+        dictNodeB= cmds.createNode( "distanceBetween", n= "%s_dict02" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocA, "%s.point1" % dictNodeB )
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocB, "%s.point2" % dictNodeB )
+        dictNodeC= cmds.createNode( "distanceBetween", n= "%s_dict03" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocB, "%s.point1" % dictNodeC )
+        cmds.connectAttr( "%s.worldPosition[0]" % dictLocC, "%s.point2" % dictNodeC )
+        
+        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
+            upLimbLen= cmds.getAttr( "%s.distance" % dictNodeB )
+            dnLimbLen= cmds.getAttr( "%s.distance" % dictNodeC )
+            actualLen= (upLimbLen) + (dnLimbLen)
+            if actualLen < 0:
+                actualLen= -(actualLen)
+            else:
+                pass
+        else:
+            upLimbLen= cmds.getAttr( "%s.distance" % dictNodeB )
+            dnLimbLen= cmds.getAttr( "%s.distance" % dictNodeC )
+            actualLen= (upLimbLen) + (dnLimbLen)
+            if actualLen < 0:
+                actualLen= -(actualLen)
+            else:
+                pass
+        
+        # Setup Dictance Tools ikDrv
+        drvDictLocA= cmds.spaceLocator( n= "%s_drv_dict01_loc" % self.prefix )[0]
+        drvDictLocAGrp= cmds.group( n= "%s_GRP" % drvDictLocA, em=0  )
+        tmpCnst= cmds.parentConstraint( self.shdJnt, drvDictLocAGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( self.shdIkCTL, drvDictLocAGrp, mo=0 )
+        cmds.setAttr( "%s.v" % drvDictLocAGrp, 0 )
+        drvDictLocB= cmds.spaceLocator( n= "%s_drv_dict02_loc" % self.prefix )[0]
+        drvDictLocBGrp= cmds.group( n= "%s_GRP" % drvDictLocB, em=0  )
+        tmpCnst= cmds.parentConstraint( self.elbJnt, drvDictLocBGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        drvDictLocBCnst= cmds.parentConstraint( self.armIkJnt[1], drvDictLocBGrp, mo=1 )[0]
+        cmds.setAttr( "%s.v" % drvDictLocBGrp, 0 )
+        drvDictLocC= cmds.spaceLocator( n= "%s_drvDict03_loc" % self.prefix )[0]
+        drvDictLocCGrp= cmds.group( n= "%s_GRP" % drvDictLocC, em=0  )
+        tmpCnst= cmds.parentConstraint( self.wstJnt, drvDictLocCGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( self.armIkCTL, drvDictLocCGrp, mo=0 )
+        cmds.setAttr( "%s.v" % drvDictLocCGrp, 0 )
+        cmds.parent( drvDictLocAGrp, drvDictLocBGrp, drvDictLocCGrp, self.locGRP )
+        drvDictNodeA= cmds.createNode( "distanceBetween", n= "%s_drvDict01" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocA, "%s.point1" % drvDictNodeA )
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocC, "%s.point2" % drvDictNodeA )
+        drvDictNodeB= cmds.createNode( "distanceBetween", n= "%s_drvDict02" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocA, "%s.point1" % drvDictNodeB )
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocB, "%s.point2" % drvDictNodeB )
+        drvDictNodeC= cmds.createNode( "distanceBetween", n= "%s_drvDict03" % self.prefix )    # dictanceBetween
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocB, "%s.point1" % drvDictNodeC )
+        cmds.connectAttr( "%s.worldPosition[0]" % drvDictLocC, "%s.point2" % drvDictNodeC )
+        
+        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
+            drvUpLimbLen= cmds.getAttr( "%s.distance" % drvDictNodeB )
+            drvDnLimbLen= cmds.getAttr( "%s.distance" % drvDictNodeC )
+            drvActualLen= (drvUpLimbLen) + (drvDnLimbLen)
+            if drvActualLen < 0:
+                drvActualLen= -(drvActualLen)
+            else:
+                pass
+        else:
+            drvUpLimbLen= cmds.getAttr( "%s.distance" % drvDictNodeB )
+            drvDnLimbLen= cmds.getAttr( "%s.distance" % drvDictNodeC )
+            drvActualLen= (drvUpLimbLen) + (drvDnLimbLen)
+            if drvActualLen < 0:
+                drvActualLen= -(drvActualLen)
+            else:
+                pass
+                
         # Pole Vector Controller
         pvCTL= mel.eval('curve -d 1 -p 0 0 1 -p 0 0.5 0.866025 -p 0 0.866025 0.5 -p 0 1 0 -p 0 0.866025 -0.5 -p 0 0.5 -0.866025 -p 0 0 -1 -p 0 -0.5 -0.866025 -p 0 -0.866025 -0.5 -p 0 -1 0 -p 0 -0.866025 0.5 -p 0 -0.5 0.866025 -p 0 0 1 -p 0.707107 0 0.707107 -p 1 0 0 -p 0.707107 0 -0.707107 -p 0 0 -1 -p -0.707107 0 -0.707107 -p -1 0 0 -p -0.866025 0.5 0 -p -0.5 0.866025 0 -p 0 1 0 -p 0.5 0.866025 0 -p 0.866025 0.5 0 -p 1 0 0 -p 0.866025 -0.5 0 -p 0.5 -0.866025 0 -p 0 -1 0 -p -0.5 -0.866025 0 -p -0.866025 -0.5 0 -p -1 0 0 -p -0.707107 0 0.707107 -p 0 0 1 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -k 26 -k 27 -k 28 -k 29 -k 30 -k 31 -k 32 ;')
         cmds.scale( 2, 2, 2, pvCTL )
@@ -362,7 +470,7 @@ class sIkFkArmSetup_Cl():
         cmds.delete( tmpCnst )
         cmds.parent( "%s_GRP" % self.pvCTL, "%s_rotate_ax" % self.pvCTL )        
         cmds.parentConstraint( self.pvCTL, self.pvLocGRP, mo=0 )
-        #cmds.pointConstraint( self.armIkDrvJnt[1], self.pvCTLGRP, mo=0 )
+        cmds.parentConstraint( self.armIkDrvJnt[1], self.pvCTLGRP, mo=0 )
         pvCnst= cmds.parentConstraint( self.shdIkCTL, self.armIkCTL, "%s_GRP" % self.pvCTL, mo=1 )[0]
         pvLocPos= cmds.xform( self.pvLoc, q=1, ws=1, t=1 )
         anntShape= cmds.annotate( self.pvLoc, tx= " ", p= pvLocPos )
@@ -397,7 +505,6 @@ class sIkFkArmSetup_Cl():
         cmds.setAttr( "%s.colorIfFalseR" % pvCon, 0 )
         cmds.connectAttr( "%s.pVVisibility" % self.armIkCTL, "%s.firstTerm" % pvCon )
         cmds.connectAttr( "%s.PV" % self.armIkCTL, "%s.colorIfTrueR" % pvCon )
-        cmds.connectAttr( "%s.outColorR" % pvCon, "%s.rx" % ( "%s_rotate_ax" % self.pvCTL ) )
         cmds.connectAttr( "%s.outColorR" % pvCon, "%s.twist" % self.armDrvIkH )
         
         # Setup Extra Attributes
@@ -445,48 +552,13 @@ class sIkFkArmSetup_Cl():
              cmds.connectAttr( "%s.outputX" % ikFKReverseNode, "%s.%sW0" % (sCnst, self.armIkJnt[each]) )
              cmds.connectAttr( "%s.ikFKSwitch" % self.extraCTL, "%s.%sW1" % (sCnst, self.armFkJnt[each]) )
         
-        # Setup Dictance Tools
-        dictLocA= cmds.spaceLocator( n= "%s_dict01_loc" % self.prefix )[0]
-        dictLocAGrp= cmds.group( n= "%s_GRP" % dictLocA, em=0  )
-        tmpCnst= cmds.parentConstraint( self.shdJnt, dictLocAGrp, mo=0 )
-        cmds.delete( tmpCnst )
-        cmds.parentConstraint( self.shdIkCTL, dictLocAGrp, mo=0 )
-        cmds.setAttr( "%s.v" % dictLocAGrp, 0 )
-        dictLocB= cmds.spaceLocator( n= "%s_dict02_loc" % self.prefix )[0]
-        dictLocBGrp= cmds.group( n= "%s_GRP" % dictLocB, em=0  )
-        tmpCnst= cmds.parentConstraint( self.wstJnt, dictLocBGrp, mo=0 )
-        cmds.delete( tmpCnst )
-        cmds.parentConstraint( self.armIkCTL, dictLocBGrp, mo=0 )
-        cmds.setAttr( "%s.v" % dictLocBGrp, 0 )
-        cmds.parent( dictLocAGrp, dictLocBGrp, self.locGRP )
-        dictNode= cmds.createNode( "distanceBetween", n= "%s_dict01" % self.prefix )    # dictanceBetween
-        cmds.connectAttr( "%s.worldPosition[0]" % dictLocA, "%s.point1" % dictNode )
-        cmds.connectAttr( "%s.worldPosition[0]" % dictLocB, "%s.point2" % dictNode )
-        dist= cmds.getAttr( "%s.distance" % dictNode )    # distance value
-        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
-            upLimbLen= cmds.getAttr( "%s.tx" % self.elbJnt )
-            dnLimbLen= cmds.getAttr( "%s.tx" % self.wstJnt )
-            actualLen= (upLimbLen) + (dnLimbLen)
-            if actualLen < 0:
-                actualLen= -(actualLen)
-            else:
-                pass
-        else:
-            upLimbLen= cmds.getAttr( "%s.ty" % self.elbJnt )
-            dnLimbLen= cmds.getAttr( "%s.ty" % self.wstJnt )
-            actualLen= (upLimbLen) + (dnLimbLen)
-            if actualLen < 0:
-                actualLen= -(actualLen)
-            else:
-                pass
-        
         # Setup Stretchy
         self.globalScaleMD= cmds.createNode( "multiplyDivide", n= "%s_globalScale_MD01" % self.prefix )    # globalScaleMD
         cmds.setAttr( "%s.operation" % self.globalScaleMD, 1 )
         cmds.setAttr( "%s.input1X" % self.globalScaleMD, 1 )
-        cmds.connectAttr( "%s.distance" % dictNode, "%s.input1X" % self.globalScaleMD )
+        cmds.connectAttr( "%s.distance" % dictNodeA, "%s.input1X" % self.globalScaleMD )
         autoStretchCon= cmds.createNode( "condition", n= "%s_autoStretch_con01" % self.prefix )    # autoStretchCon
-        cmds.connectAttr( "%s.distance" % dictNode, "%s.colorIfTrueR" % autoStretchCon )
+        cmds.connectAttr( "%s.distance" % dictNodeA, "%s.colorIfTrueR" % autoStretchCon )
         cmds.connectAttr( "%s.autoStretch" % self.armIkCTL, "%s.firstTerm" % autoStretchCon )
         cmds.setAttr( "%s.secondTerm" % autoStretchCon, 1 )
         cmds.setAttr( "%s.operation" % autoStretchCon, 0 )
@@ -502,20 +574,49 @@ class sIkFkArmSetup_Cl():
         stretchyMMD= cmds.createNode( "multiplyDivide", n= "%s_stretchy_M_MD01" % self.prefix )    # stretchyMMD
         cmds.setAttr( "%s.operation" % stretchyMMD, 1 )
         cmds.connectAttr( "%s.outputX" % stretchyDMD, "%s.input1X" % stretchyMMD )
-        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkJnt[0] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkJnt[1] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkJnt[2] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkDrvJnt[0] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkDrvJnt[1] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sx" % self.armIkDrvJnt[2] )
+        stretchyMD= cmds.createNode( "multiplyDivide", n= "%s_stretchy_MD01" % self.prefix )    # stretchyMD
+        cmds.setAttr( "%s.operation" % stretchyMD, 1 )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1X" % stretchyMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1Y" % stretchyMD )
+        if self.prefix.startswith( "L_" ) == True:
+            cmds.setAttr( "%s.input2X" % stretchyMD, upLimbLen )
+            cmds.setAttr( "%s.input2Y" % stretchyMD, dnLimbLen )
         else:
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkJnt[0] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkJnt[1] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkJnt[2] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkDrvJnt[0] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkDrvJnt[1] )
-            cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.sy" % self.armIkDrvJnt[2] )
+            cmds.setAttr( "%s.input2X" % stretchyMD, -(upLimbLen) )
+            cmds.setAttr( "%s.input2Y" % stretchyMD, -(dnLimbLen) )
+        
+        # Setup Stretchy ikDrv
+        self.drvGlobalScaleMD= cmds.createNode( "multiplyDivide", n= "%s_drvGlobalScale_MD01" % self.prefix )    # drvGlobalScaleMD
+        cmds.setAttr( "%s.operation" % self.drvGlobalScaleMD, 1 )
+        cmds.setAttr( "%s.input1X" % self.drvGlobalScaleMD, 1 )
+        cmds.connectAttr( "%s.distance" % drvDictNodeA, "%s.input1X" % self.drvGlobalScaleMD )
+        drvAutoStretchCon= cmds.createNode( "condition", n= "%s_drvAutoStretch_con01" % self.prefix )    # drvAutoStretchCon
+        cmds.connectAttr( "%s.distance" % drvDictNodeA, "%s.colorIfTrueR" % drvAutoStretchCon )
+        cmds.connectAttr( "%s.autoStretch" % self.armIkCTL, "%s.firstTerm" % drvAutoStretchCon )
+        cmds.setAttr( "%s.secondTerm" % drvAutoStretchCon, 1 )
+        cmds.setAttr( "%s.operation" % drvAutoStretchCon, 0 )
+        cmds.setAttr( "%s.colorIfFalseR" % drvAutoStretchCon, drvActualLen )
+        drvStretchyCon= cmds.createNode( "condition", n= "%s_drvStretchy_con01" % self.prefix )    # drvStretchyCon
+        cmds.connectAttr( "%s.outColorR" % drvAutoStretchCon, "%s.firstTerm" % drvStretchyCon )
+        cmds.setAttr( "%s.operation" % drvStretchyCon, 2 )
+        cmds.setAttr( "%s.colorIfFalseR" % drvStretchyCon, drvActualLen )
+        drvStretchyDMD= cmds.createNode( "multiplyDivide", n= "%s_stretchy_D_MD01" % self.prefix )    # drvStretchyDMD
+        cmds.setAttr( "%s.operation" % drvStretchyDMD, 2 )
+        cmds.setAttr( "%s.input2X" % drvStretchyDMD, drvActualLen )
+        cmds.connectAttr( "%s.outColorR" % drvStretchyCon, "%s.input1X" % drvStretchyDMD )
+        drvStretchyMMD= cmds.createNode( "multiplyDivide", n= "%s_drvStretchy_M_MD01" % self.prefix )    # drvStretchyMMD
+        cmds.setAttr( "%s.operation" % drvStretchyMMD, 1 )
+        cmds.connectAttr( "%s.outputX" % drvStretchyDMD, "%s.input1X" % drvStretchyMMD )
+        drvStretchyMD= cmds.createNode( "multiplyDivide", n= "%s_drvStretchy_MD01" % self.prefix )    # stretchyMD
+        cmds.setAttr( "%s.operation" % drvStretchyMD, 1 )
+        cmds.connectAttr( "%s.outputX" % drvStretchyMMD, "%s.input1X" % drvStretchyMD )
+        cmds.connectAttr( "%s.outputX" % drvStretchyMMD, "%s.input1Y" % drvStretchyMD )
+        if self.prefix.startswith( "L_" ) == True:
+            cmds.setAttr( "%s.input2X" % drvStretchyMD, drvUpLimbLen )
+            cmds.setAttr( "%s.input2Y" % drvStretchyMD, drvDnLimbLen )
+        else:
+            cmds.setAttr( "%s.input2X" % drvStretchyMD, -(drvUpLimbLen) )
+            cmds.setAttr( "%s.input2Y" % drvStretchyMD, -(drvDnLimbLen) )
 
         # Setup Length
         lengthMD= cmds.createNode( "multiplyDivide", n= "%s_length_M_MD01" % self.prefix )    # lengthMD
@@ -542,6 +643,59 @@ class sIkFkArmSetup_Cl():
         cmds.connectAttr( "%s.outputR" % lengthC, "%s.input2X" % lengthSTMD )
         cmds.connectAttr( "%s.outputX" % lengthSTMD, "%s.secondTerm" % stretchyCon )
         
+        # Setup Length ikDrv
+        drvLengthMD= cmds.createNode( "multiplyDivide", n= "%s_drvLength_M_MD01" % self.prefix )    # drvLengthMD
+        cmds.connectAttr( "%s.length" % self.armIkCTL, "%s.input1X" % drvLengthMD )
+        cmds.setAttr( "%s.operation" % drvLengthMD, 0.1 )
+        cmds.setAttr( "%s.input2X" % drvLengthMD, 0.1 )
+        drvLengthPMA= cmds.createNode( "plusMinusAverage", n= "%s_drvLength_dv_PMA01" % self.prefix  )    # drvLengthPMA
+        cmds.connectAttr( "%s.outputX" % drvLengthMD, "%s.input1D[0]" % drvLengthPMA )
+        cmds.setAttr( "%s.operation" %  drvLengthPMA, 1 )
+        cmds.setAttr( "%s.input1D[1]" % drvLengthPMA, 1 )
+        drvLengthC= cmds.createNode( "clamp", n= "%s_length_clamp01" % self.prefix  )    # drvLengthC
+        cmds.connectAttr( "%s.output1D" % drvLengthPMA, "%s.inputR" % drvLengthC )
+        cmds.connectAttr( "%s.outputR" % drvLengthC , "%s.input2X" % drvStretchyMMD )
+        cmds.setAttr( "%s.minR" % drvLengthC, 0.5 )
+        cmds.setAttr( "%s.maxR" % drvLengthC, 10 )
+        drvLengthNeuMD= cmds.createNode( "multiplyDivide", n= "%s_drvLengthNeu_D_MD01" % self.prefix  )    # drvLengthNeuMD
+        cmds.setAttr( "%s.operation" % drvLengthNeuMD, 2 )
+        cmds.connectAttr( "%s.outputR" % drvLengthC, "%s.input2X" % drvLengthNeuMD )
+        cmds.connectAttr( "%s.outputX" % self.globalScaleMD, "%s.input1X" % drvLengthNeuMD )
+        cmds.connectAttr( "%s.outputX" % drvLengthNeuMD, "%s.colorIfTrueR" % drvStretchyCon )
+        drvLengthSTMD= cmds.createNode( "multiplyDivide", n= "%s_length_stM_MD01" % self.prefix  )    # drvLengthSTMD
+        cmds.setAttr( "%s.operation" % drvLengthSTMD, 1 )
+        cmds.setAttr( "%s.input1X" % drvLengthSTMD, drvActualLen )
+        cmds.connectAttr( "%s.outputR" % drvLengthC, "%s.input2X" % drvLengthSTMD )
+        cmds.connectAttr( "%s.outputX" % drvLengthSTMD, "%s.secondTerm" % drvStretchyCon )
+        cmds.connectAttr( "%s.outputX" % drvStretchyMD, "%s.tx" % self.armIkDrvJnt[1] )
+        cmds.connectAttr( "%s.outputY" % drvStretchyMD, "%s.tx" % self.armIkDrvJnt[2] )
+        
+        # Knee/Elbow Loc
+        upLimbBTA= cmds.createNode( "blendTwoAttr", n= "%s_upArm_BTA01" % self.prefix )    # upLimbBTA
+        cmds.connectAttr( "%s.outputX" % stretchyMD, "%s.input[0]" % upLimbBTA )
+        cmds.connectAttr( "%s.elbowLock" % self.armIkCTL, "%s.attributesBlender" % upLimbBTA )
+        dnLimbBTA= cmds.createNode( "blendTwoAttr", n= "%s_dnArm_BTA01" % self.prefix )    # dnLimbBTA
+        cmds.connectAttr( "%s.outputY" % stretchyMD, "%s.input[0]" % dnLimbBTA )
+        cmds.connectAttr( "%s.elbowLock" % self.armIkCTL, "%s.attributesBlender" % dnLimbBTA )
+        if self.prefix.startswith( "L_" ) == True:
+            cmds.connectAttr( "%s.distance" % dictNodeB, "%s.input[1]" % upLimbBTA )
+            cmds.connectAttr( "%s.distance" % dictNodeC, "%s.input[1]" % dnLimbBTA )
+        else:
+            distNegMD= cmds.createNode( "multiplyDivide", n= "%s_dictNeg_MD01" % self.prefix )
+            cmds.setAttr( "%s.input2X" % distNegMD, -1 )
+            cmds.setAttr( "%s.input2Y" % distNegMD, -1 )
+            cmds.setAttr( "%s.operation" % distNegMD, 1 )
+            cmds.connectAttr( "%s.distance" % dictNodeB, "%s.input1X" % distNegMD )
+            cmds.connectAttr( "%s.distance" % dictNodeC, "%s.input1Y" % distNegMD )
+            cmds.connectAttr( "%s.outputX" % distNegMD, "%s.input[1]" % upLimbBTA )
+            cmds.connectAttr( "%s.outputY" % distNegMD, "%s.input[1]" % dnLimbBTA )
+        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
+            cmds.connectAttr( "%s.output" % upLimbBTA, "%s.tx" % self.armIkJnt[1] )
+            cmds.connectAttr( "%s.output" % dnLimbBTA, "%s.tx" % self.armIkJnt[2] )
+        else:
+            cmds.connectAttr( "%s.output" % upLimbBTA, "%s.ty" % self.armIkJnt[1] )
+            cmds.connectAttr( "%s.output" % dnLimbBTA, "%s.ty" % self.armIkJnt[2] )
+        
         # Arm Twist Counter Setup
         # extra Controller
         extCTLaxList= []
@@ -563,9 +717,11 @@ class sIkFkArmSetup_Cl():
             cmds.parentConstraint( extCTL, each, mo=0 )
             cmds.scaleConstraint( extCTL, each, mo=0 )
         cmds.parentConstraint( self.shdJnt, self.extraCTLGRPList[0], mo=0 )
-        cmds.parentConstraint( self.shdJnt, self.extraCTLGRPList[1], mo=1 )
+        cmds.pointConstraint( self.shdJnt, self.elbJnt, self.extraCTLGRPList[1], mo=0 )
+        cmds.orientConstraint( self.shdJnt, self.extraCTLGRPList[1], mo=1 )
         cmds.parentConstraint( self.elbJnt, self.extraCTLGRPList[2], mo=0 )
-        cmds.parentConstraint( self.elbJnt, self.extraCTLGRPList[3], mo=1 )
+        cmds.pointConstraint( self.elbJnt, self.wstJnt, self.extraCTLGRPList[3], mo=0 )
+        cmds.orientConstraint( self.elbJnt, self.extraCTLGRPList[3], mo=1 )
         cmds.parentConstraint( wstJnt02, self.extraCTLGRPList[4], mo=0 )
         cmds.connectAttr( "%s.extraCTL" % self.extraCTL, "%s.v" % self.armExtCTLGRP )
         
@@ -581,7 +737,10 @@ class sIkFkArmSetup_Cl():
         tmpCnst= cmds.parentConstraint( self.wstJnt, aimUpLocGrp, mo=0 )
         cmds.delete( tmpCnst )
         if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
-            cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wu=[0,1,0], wuo= aimUploc, sk= ["y", "z"] )
+            if self.prefix.startswith( "L_" ) == True:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wu=[0,1,0], wuo= aimUploc, sk= ["y", "z"] )
+            else:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[-1,0,0], u=[0,-1,0], wut= "objectrotation", wu=[0,-1,0], wuo= aimUploc, sk= ["y", "z"] )
             twistCntMD= cmds.createNode( "multiplyDivide", n= "%s_twistCounter_MD01" % self.prefix )    # twistCntMD
             cmds.connectAttr( "%s.rx" % aimLoc, "%s.input1X" % twistCntMD )
             cmds.connectAttr( "%s.rx" % aimLoc, "%s.input1Y" % twistCntMD )
@@ -604,7 +763,10 @@ class sIkFkArmSetup_Cl():
             cmds.connectAttr( "%s.outputZ" % twistCntMD, "%s.input1D[1]" % twistCntPMA )
             cmds.connectAttr( "%s.output1D" % twistCntPMA, "%s.rx" % extCTLaxList[-4] ) 
         else:
-            cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,-1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= aimUploc, sk= ["x", "z"] )
+            if self.prefix.startswith( "L_" ) == True:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,-1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= aimUploc, sk= ["x", "z"] )
+            else:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,1,0], u=[0,0,-1], wut= "objectrotation", wu=[0,0,-1], wuo= aimUploc, sk= ["x", "z"] )
             twistCntMD= cmds.createNode( "multiplyDivide", n= "%s_twistCounter_MD01" % self.prefix )    # twistCntMD
             cmds.connectAttr( "%s.ry" % aimLoc, "%s.input1X" % twistCntMD )
             cmds.connectAttr( "%s.ry" % aimLoc, "%s.input1Y" % twistCntMD )
@@ -645,4 +807,4 @@ class sIkFkArmSetup_Cl():
             
         
 if __name__ == "__main__":
-    arm= sIkFkArmSetup_Cl( "L_clavicle_Jnt01", "L_shoulder_Jnt01", "L_elbow_Jnt01", "L_wrist_Jnt01" )
+    arm= sIkFkArmSetup_Cl( "R_clavicle_Jnt01", "R_shoulder_Jnt01", "R_elbow_Jnt01", "R_wrist_Jnt01" )
