@@ -52,17 +52,34 @@ class mpSpineSetup_Cl():
         jntRadius= cmds.getAttr( "%s.radius" % self.pelvis )
         self.spine= cmds.joint( n= "spine_Jnt01", rad= jntRadius )
         tmpCnst= cmds.parentConstraint( self.pelvis, self.chest, self.spine, mo=0 )
-        cmds.delete( tmpCnst )        
+        cmds.delete( tmpCnst )
+        
+        # tmpPelvis & tmpChest position
+        cmds.select(cl=1)
+        tmpChest= cmds.joint( n="tmpChest" )
+        tmpCnst= cmds.parentConstraint( self.chest, self.spine, tmpChest, mo=0 )[0]
+        cmds.setAttr( "%s.%sW0" % (tmpCnst, self.chest), 0.7 )
+        cmds.setAttr( "%s.%sW1" % (tmpCnst, self.spine), 0.3 )
+        cmds.delete( tmpCnst )
+        cmds.select(cl=1)
+        tmpPelvis= cmds.joint( n="tmpPelvis" )
+        tmpCnst= cmds.parentConstraint( self.pelvis, self.spine, tmpPelvis, mo=0 )[0]
+        cmds.setAttr( "%s.%sW0" % (tmpCnst, self.pelvis), 0.7 )
+        cmds.setAttr( "%s.%sW1" % (tmpCnst, self.spine), 0.3 )
+        cmds.delete( tmpCnst )
         
         # create motion path curve
         pelvisPos= cmds.xform( self.pelvis, q=1, t=1, ws=1 )
+        tmpPelvisPos= cmds.xform( tmpPelvis, q=1, t=1, ws=1 )
         chestPos= cmds.xform( self.chest, q=1, t=1, ws=1 )
+        tmpChestPos= cmds.xform( tmpChest, q=1, t=1, ws=1 )
         spinePos= cmds.xform( self.spine, q=1, t=1, ws=1 )
-        newCrv= cmds.curve( d=2, p= [(pelvisPos), (spinePos), (chestPos)] )
+        newCrv= cmds.curve( d=3, p= [(pelvisPos), (tmpPelvisPos), (spinePos), (tmpChestPos), (chestPos)], k=[0,0,0,1,2,2,2] )
         self.spineCrv= cmds.rename( newCrv, "spine_crv" )
         cmds.setAttr( "%s.v" % self.spineCrv, 0 )
         cmds.parent( self.spineCrv, self.spineExtra )
         self.selJnt= [ self.pelvis, self.spine, self.chest ]
+        cmds.delete( tmpChest, tmpPelvis )
         cmds.select( cl=1 )
 
         for each in self.selJnt:
