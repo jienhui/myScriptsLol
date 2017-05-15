@@ -197,7 +197,12 @@ class sIkFkArmSetup_Cl():
         cmds.parent( self.armFkCTLGRP[0], self.clvCTLGRP, self.armCTLGRP ) 
         shdJntPos= cmds.xform( self.shdJnt, q=1, ws=1, t=1 )
         cmds.select( "%s.cv[0:7]" % self.clvCTL )
-        cmds.move( (shdJntPos[0]/1.44), ((shdJntPos[1])/8.5), (shdJntPos[2]), r=1, os=1, wd= 1 )
+        if str(self.prefix).startswith( "L_" ) == True:
+            cmds.move( (shdJntPos[0]/1.44), ((shdJntPos[1])/8.5), (shdJntPos[2]), r=1, os=1, wd= 1 )
+        elif str(self.prefix).startswith( "R_" ) == True:
+            cmds.move( (shdJntPos[0]/1.44), ((shdJntPos[1])/-8.5), -(shdJntPos[2]), r=1, os=1, wd= 1 )
+        else:
+            cmds.move( (shdJntPos[0]/1.44), ((shdJntPos[1])/8.5), (shdJntPos[2]), r=1, os=1, wd= 1 )
         cmds.select(cl=1) 
         
         # Setup IK
@@ -456,9 +461,12 @@ class sIkFkArmSetup_Cl():
         if self.prefix.startswith( "L_" ) == True:
             cmds.setAttr( "%s.input1Y" % self.globalScaleMD01, upLimbLen )
             cmds.setAttr( "%s.input1Z" % self.globalScaleMD01, dnLimbLen )
-        else:
+        elif self.prefix.startswith( "R_" ) == True:
             cmds.setAttr( "%s.input1Y" % self.globalScaleMD01, -(upLimbLen) )
             cmds.setAttr( "%s.input1Z" % self.globalScaleMD01, -(dnLimbLen) )
+        else:
+            cmds.setAttr( "%s.input1Y" % self.globalScaleMD01, upLimbLen )
+            cmds.setAttr( "%s.input1Z" % self.globalScaleMD01, dnLimbLen )
         cmds.connectAttr( "%s.outputY" % self.globalScaleMD01, "%s.input2X" % stretchyMD )
         cmds.connectAttr( "%s.outputZ" % self.globalScaleMD01, "%s.input2Y" % stretchyMD )
 
@@ -507,7 +515,7 @@ class sIkFkArmSetup_Cl():
         if self.prefix.startswith( "L_" ) == True:
             cmds.connectAttr( "%s.distance" % dictNodeB, "%s.input[1]" % upLimbBTA )
             cmds.connectAttr( "%s.distance" % dictNodeC, "%s.input[1]" % dnLimbBTA )
-        else:
+        elif self.prefix.startswith( "R_" ) == True:
             distNegMD= cmds.createNode( "multiplyDivide", n= "%s_dictNeg_MD01" % self.prefix )
             cmds.setAttr( "%s.input2X" % distNegMD, -1 )
             cmds.setAttr( "%s.input2Y" % distNegMD, -1 )
@@ -516,6 +524,9 @@ class sIkFkArmSetup_Cl():
             cmds.connectAttr( "%s.distance" % dictNodeC, "%s.input1Y" % distNegMD )
             cmds.connectAttr( "%s.outputX" % distNegMD, "%s.input[1]" % upLimbBTA )
             cmds.connectAttr( "%s.outputY" % distNegMD, "%s.input[1]" % dnLimbBTA )
+        else:
+            cmds.connectAttr( "%s.distance" % dictNodeB, "%s.input[1]" % upLimbBTA )
+            cmds.connectAttr( "%s.distance" % dictNodeC, "%s.input[1]" % dnLimbBTA )
         if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
             cmds.connectAttr( "%s.output" % upLimbBTA, "%s.tx" % self.armIkJnt[1] )
             cmds.connectAttr( "%s.output" % dnLimbBTA, "%s.tx" % self.armIkJnt[2] )
@@ -580,16 +591,18 @@ class sIkFkArmSetup_Cl():
         if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
             if self.prefix.startswith( "L_" ) == True:
                 cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wu=[0,1,0], wuo= aimUploc, sk= ["y", "z"] )
-            else:
+            elif self.prefix.startswith( "R_" ) == True:
                 cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[-1,0,0], u=[0,-1,0], wut= "objectrotation", wu=[0,-1,0], wuo= aimUploc, sk= ["y", "z"] )
+            else:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[1,0,0], u=[0,1,0], wut= "objectrotation", wu=[0,1,0], wuo= aimUploc, sk= ["y", "z"] )
             twistCntMD= cmds.createNode( "multiplyDivide", n= "%s_twistCounter_MD01" % self.prefix )    # twistCntMD
             cmds.connectAttr( "%s.rx" % aimLoc, "%s.input1X" % twistCntMD )
             cmds.connectAttr( "%s.rx" % aimLoc, "%s.input1Y" % twistCntMD )
             cmds.connectAttr( "%s.rx" % aimLoc, "%s.input1Z" % twistCntMD )
             cmds.setAttr( "%s.operation" % twistCntMD, 1 )
-            cmds.setAttr( "%s.input2X" % twistCntMD, 0.75 )
-            cmds.setAttr( "%s.input2Y" % twistCntMD, 0.5 )
-            cmds.setAttr( "%s.input2Z" % twistCntMD, 0.25 )
+            cmds.setAttr( "%s.input2X" % twistCntMD, 0.5 )
+            cmds.setAttr( "%s.input2Y" % twistCntMD, 0 )
+            cmds.setAttr( "%s.input2Z" % twistCntMD, 0 )
             cmds.connectAttr( "%s.outputX" % twistCntMD, "%s.rx" % extCTLaxList[-2] )
             cmds.connectAttr( "%s.outputY" % twistCntMD, "%s.rx" % extCTLaxList[-3] )
             pvCntMD= cmds.createNode( "multiplyDivide", n= "%s_pvCounter_MD01" % self.prefix )    # pvCntMD
@@ -606,16 +619,18 @@ class sIkFkArmSetup_Cl():
         else:
             if self.prefix.startswith( "L_" ) == True:
                 cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,-1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= aimUploc, sk= ["x", "z"] )
-            else:
+            elif self.prefix.startswith( "R_" ) == True:
                 cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,1,0], u=[0,0,-1], wut= "objectrotation", wu=[0,0,-1], wuo= aimUploc, sk= ["x", "z"] )
+            else:
+                cmds.aimConstraint( aimUploc, aimLoc, mo=0, aim=[0,-1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= aimUploc, sk= ["x", "z"] )
             twistCntMD= cmds.createNode( "multiplyDivide", n= "%s_twistCounter_MD01" % self.prefix )    # twistCntMD
             cmds.connectAttr( "%s.ry" % aimLoc, "%s.input1X" % twistCntMD )
             cmds.connectAttr( "%s.ry" % aimLoc, "%s.input1Y" % twistCntMD )
             cmds.connectAttr( "%s.ry" % aimLoc, "%s.input1Z" % twistCntMD )
             cmds.setAttr( "%s.operation" % twistCntMD, 1 )
-            cmds.setAttr( "%s.input2X" % twistCntMD, 0.75 )
-            cmds.setAttr( "%s.input2Y" % twistCntMD, 0.5 )
-            cmds.setAttr( "%s.input2Z" % twistCntMD, 0.25 )
+            cmds.setAttr( "%s.input2X" % twistCntMD, 0.5 )
+            cmds.setAttr( "%s.input2Y" % twistCntMD, 0 )
+            cmds.setAttr( "%s.input2Z" % twistCntMD, 0 )
             cmds.connectAttr( "%s.outputX" % twistCntMD, "%s.ry" % extCTLaxList[-2] )
             cmds.connectAttr( "%s.outputY" % twistCntMD, "%s.ry" % extCTLaxList[-3] )
             pvCntMD= cmds.createNode( "multiplyDivide", n= "%s_pvCounter_MD01" % self.prefix )    # pvCntMD
