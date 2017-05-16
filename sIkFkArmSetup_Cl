@@ -42,7 +42,7 @@ class sIkFkArmSetup_Cl():
         elif self.shdJnt.startswith( 'R_sh' ):
             self.prefix = "R_arm"
         else:
-            cmds.warning( "Please use 'L_' or 'R_' for arm joint's prefix !" )
+            self.prefix= "arm"
         
         self.locGRP= cmds.group( n= "%s_loc_GRP" % self.prefix, em=1 )
         self.extraJntGRP= cmds.group( n= "%s_extraJnt_GRP" % self.prefix, em=1 )
@@ -58,9 +58,17 @@ class sIkFkArmSetup_Cl():
         
         # Create Ik, Fk & skin joint set
         self.armJnt= [ self.shdJnt, self.elbJnt, self.wstJnt ]
-        wstJnt02= cmds.duplicate( self.wstJnt )[0]
-        self.armJnt.append( wstJnt02 )
-        cmds.parent( wstJnt02, self.wstJnt )
+        if cmds.listRelatives( self.wstJnt, c=1 ) != None :
+            palmJnt= cmds.listRelatives( self.wstJnt, c=1 )
+            cmds.parent( palmJnt, w=1 )
+            wstJnt02= cmds.duplicate( self.wstJnt )[0]
+            self.armJnt.append( wstJnt02 )
+            cmds.parent( palmJnt, wstJnt02 )
+            cmds.parent( wstJnt02, self.wstJnt )
+        else:
+            wstJnt02= cmds.duplicate( self.wstJnt )[0]
+            self.armJnt.append( wstJnt02 )
+            cmds.parent( wstJnt02, self.wstJnt )
         jntRad= cmds.getAttr( "%s.radius" % self.shdJnt )
         
         # IK joints
