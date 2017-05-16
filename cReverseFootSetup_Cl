@@ -1,0 +1,329 @@
+import maya.cmds as cmds
+import maya.mel as mel
+
+###### ReverseFoot Setup Class ######
+class cReverseFootSetup_Cl():
+    def __init__( self, footjnt, footLoc, ankleIK, ankleFK ):
+        self.footJnt= footjnt
+        self.footLoc= footLoc
+        self.ankleIK= ankleIK
+        self.ankleFK= ankleFK
+            
+        if cmds.objExists( self.footJnt[0] ) == True:
+            if cmds.objExists( self.footJnt[1] ) == True:
+                if cmds.objExists( self.footLoc[0] ) == True:
+                    if cmds.objExists( self.footLoc[1] ) == True:
+                        if cmds.objExists( self.footLoc[2] ) == True:
+                            if cmds.objExists( self.footLoc[3] ) == True:
+                                if cmds.objExists( self.ankleIK ) == True:
+                                    if cmds.objExists( self.ankleFK ) == True:
+                                        self.cReverseFootSetup_Fn()
+                                    else:
+                                        cmds.warning( "ankle_IK02 not found! Please setup leg rig before setting up reverse foot!" )
+                                else:
+                                    cmds.warning( "ankle_FK02 not found! Please setup leg rig before setting up reverse foot!" )
+                            else:
+                                cmds.warning( "sideR locator not found!" )
+                        else:
+                            cmds.warning( "sideL locator not found!" )
+                    else:
+                        cmds.warning( "back locator not found!" )
+                else:
+                    cmds.warning( "front locator not found!" )
+            else:
+                cmds.warning( "Toe joint not found!" )
+        else:
+            cmds.warning( "Ball joint not found!" )
+        
+    
+    # Reverse Foot Setup Function
+    def cReverseFootSetup_Fn(self):
+
+        allCTLGRP= []
+        self.legIkJnt= []
+        self.legFkJnt= []
+        self.legFkCTL= []
+        self.legFkCTLGRP= []
+        
+        # Define prefix
+        if self.footJnt[0].startswith( 'L_b' ):
+            self.prefix = "L_leg"
+        elif self.footJnt[0].startswith( 'R_b' ):
+            self.prefix = "R_leg"
+        else:
+            self.prefix = "leg"
+        
+        self.locGRP= cmds.group( n= "%s_footLoc_GRP" % self.prefix, em=1 )
+        if self.prefix.startswith( "L_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], self.locGRP, mo=0 )
+            cmds.delete( tmpCnst )
+        elif self.prefix.startswith( "R_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], self.locGRP, mo=0 )
+            cmds.delete( tmpCnst )
+            rx= cmds.getAttr( "%s.rx" % self.locGRP )
+            cmds.setAttr( "%s.rx" % self.locGRP, rx-(-180) )
+        else:
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], self.locGRP, mo=0 )
+            cmds.delete( tmpCnst )
+        cmds.setAttr( "%s.v" % self.locGRP, 0 )
+        
+        # Create Ik, Fk & skin joint set
+        jntRad= cmds.getAttr( "%s.radius" % self.footJnt[0] )
+        
+        # IK joints
+        for each in self.footJnt:
+            ikJnt= cmds.joint( n= str(each).replace( "Jnt", "IK" ), rad= jntRad*2 )
+            tmpCnst= cmds.parentConstraint( each, ikJnt, mo=0 )
+            cmds.delete( tmpCnst )
+            self.legIkJnt.append( ikJnt )
+        
+        cmds.makeIdentity( self.legIkJnt[0], a=1, t=1, r=1, s=1 )  
+        cmds.setAttr( "%s.v" % self.legIkJnt[0], 0 )
+        cmds.parent( self.legIkJnt[0], self.ankleIK )
+        cmds.select( cl=1 )
+        
+        # FK joints
+        for each in self.footJnt:
+            fkJnt= cmds.joint( n= str(each).replace( "Jnt", "FK" ), rad= jntRad*2 )
+            tmpCnst= cmds.parentConstraint( each, fkJnt, mo=0 )
+            cmds.delete( tmpCnst )
+            self.legFkJnt.append( fkJnt )
+        
+        cmds.makeIdentity( self.legFkJnt[0], a=1, t=1, r=1, s=1 )  
+        cmds.setAttr( "%s.v" % self.legFkJnt[0], 0 )
+        cmds.parent( self.legFkJnt[0], self.ankleFK )
+        cmds.select( cl=1 )
+        
+        # Connecting IKFK joints ## Parent Constraint method ##
+        self.extraCTL= "%s_extra_CTL" % self.prefix
+        ikFKReverseNode= cmds.createNode( "reverse", n= "%s_ikFK_reverse" % self.prefix )
+        cmds.connectAttr( "%s.ikFKSwitch" % self.extraCTL, "%s.inputX" % ikFKReverseNode )
+        for each in range(len( self.legIkJnt )):
+             cnst= cmds.parentConstraint( self.legIkJnt[each], self.legFkJnt[each], self.footJnt[each], mo=0 )[0]
+             cmds.connectAttr( "%s.outputX" % ikFKReverseNode, "%s.%sW0" % (cnst, self.legIkJnt[each]) )
+             cmds.connectAttr( "%s.ikFKSwitch" % self.extraCTL, "%s.%sW1" % (cnst, self.legFkJnt[each]) )
+             sCnst= cmds.scaleConstraint( self.legIkJnt[each], self.legFkJnt[each], self.footJnt[each], mo=0 )[0]
+             cmds.connectAttr( "%s.outputX" % ikFKReverseNode, "%s.%sW0" % (sCnst, self.legIkJnt[each]) )
+             cmds.connectAttr( "%s.ikFKSwitch" % self.extraCTL, "%s.%sW1" % (sCnst, self.legFkJnt[each]) )
+        
+        # Setup FK
+        fkJntRad= cmds.getAttr( "%s.radius" % self.legFkJnt[0] )
+        legFkCTL= cmds.circle( n= "%s_CTL" % self.legFkJnt[0], nr= [0,0,1], r= fkJntRad*1.8, ch=0 )[0]
+        self.legFkCTL.append( legFkCTL )
+        cmds.setAttr( "%s.sx" % legFkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sy" % legFkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sz" % legFkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.v" % legFkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % legFkCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % legFkCTL, 17 )
+        legFkCTLGRP= cmds.group( n= "%s_GRP" % legFkCTL, em=0 )
+        self.legFkCTLGRP.append( legFkCTLGRP )
+        allCTLGRP.append( legFkCTLGRP )
+        tmpCnst= cmds.parentConstraint( self.legFkJnt[0], legFkCTLGRP, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( legFkCTL, self.legFkJnt[0], mo=0 )
+        
+        legFkCTLNum= len(self.legFkCTL)
+        legFkCTLGRPNum= len(self.legFkCTLGRP)       
+        if legFkCTLNum == legFkCTLGRPNum:
+            for each in reversed(range(1,legFkCTLGRPNum)):
+                n= each
+                cmds.parent( self.legFkCTLGRP[n], self.legFkCTL[(n-1)] )
+                n= n-1
+        ankleFKCTL= "%s_CTL" % self.ankleFK 
+        cmds.parent( self.legFkCTLGRP[0], ankleFKCTL )
+        cmds.select( "%s.cv[3:7]" % self.legFkCTL[0] )
+        cmds.scale( 1,0,1, ocp=1, r=1 )
+        cmds.select( cl=1 )
+        if self.prefix.startswith( "R_" ):
+            cmds.select( "%s.cv[0:7]" % self.legFkCTL[0] )
+            cmds.rotate( 0,0,180, r=1 )
+            cmds.select( cl=1 )
+        else:
+            pass
+        
+        # Setup Locator Hierachy
+        ballLoc01= cmds.spaceLocator( n= str(self.footJnt[0]).replace( "Jnt", "loc" ) )[0]
+        ballLocGrp= cmds.group( n= "%s_GRP" % ballLoc01, em=0 )
+        if self.prefix.startswith( "L_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], ballLocGrp, mo=0 )
+            cmds.delete( tmpCnst )
+        elif self.prefix.startswith( "R_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], ballLocGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            rx= cmds.getAttr( "%s.rx" % ballLocGrp )
+            cmds.setAttr( "%s.rx" % ballLocGrp, rx-(-180) )
+        else:
+            tmpCnst= cmds.parentConstraint( self.footJnt[0], ballLocGrp, mo=0 )
+            cmds.delete( tmpCnst )
+        ballLoc02= cmds.duplicate( ballLoc01 )[0]
+        toeLoc= cmds.spaceLocator( n= str(self.footJnt[1]).replace( "Jnt", "loc" ) )[0]
+        if self.prefix.startswith( "L_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[1], toeLoc, mo=0 )
+            cmds.delete( tmpCnst )
+        elif self.prefix.startswith( "R_" ):
+            tmpCnst= cmds.parentConstraint( self.footJnt[1], toeLoc, mo=0 )
+            cmds.delete( tmpCnst )
+            rx= cmds.getAttr( "%s.rx" % toeLoc )
+            cmds.setAttr( "%s.rx" % toeLoc, rx-(-180) )
+        else:
+            tmpCnst= cmds.parentConstraint( self.footJnt[1], toeLoc, mo=0 )
+            cmds.delete( tmpCnst )
+        cmds.parent( toeLoc, ballLoc02 )
+        cmds.parent( ballLocGrp, self.footLoc[3] )
+        cmds.parent( ballLoc02, self.footLoc[3] )
+        cmds.parent( self.footLoc[3], self.footLoc[2] )
+        cmds.parent( self.footLoc[2], self.footLoc[1] )
+        cmds.parent( self.footLoc[1], self.footLoc[0] )
+        cmds.parent( self.footLoc[0], self.locGRP )
+        cmds.parent( self.locGRP, "%s_extraNodes" % self.prefix )
+                
+        # Setup IK
+        ballikH= cmds.ikHandle( n= str(self.footJnt[0]).replace( "Jnt01", "ikHandle" ), sj= self.ankleIK, ee= self.legIkJnt[0], sol= "ikSCsolver" )[0]
+        toeikH= cmds.ikHandle( n= str(self.footJnt[1]).replace( "Jnt01", "ikHandle" ), sj= self.legIkJnt[0], ee= self.legIkJnt[1], sol= "ikSCsolver" )[0]
+        legikH= "%s_ikHandle" % self.prefix
+        dictLocCGrp= "%s_dict03_loc_GRP" % self.prefix
+        legikCnst= cmds.listRelatives( legikH, c=1, typ= "parentConstraint" )[0]
+        dictLocCCnst= cmds.listRelatives( dictLocCGrp, c=1, typ= "parentConstraint" )[0]
+        cmds.delete( legikCnst, dictLocCCnst )
+        cmds.parent( legikH, toeLoc )
+        cmds.parent( dictLocCGrp, toeLoc )
+        cmds.parent( ballikH, toeLoc )
+        cmds.parent( toeikH, ballLoc01 )
+        
+        # Add Attibutes to Leg Ik Controller
+        legIkCTL= "%sIK_CTL" % self.prefix
+        cmds.addAttr( legIkCTL, ln= "_____________",  at= "enum", en= "________:" )
+        cmds.setAttr( "%s._____________" % legIkCTL, e=1, cb=1, l=1 )
+        cmds.addAttr( legIkCTL, ln= "leanSide",  at= "double", dv= 0 )
+        cmds.setAttr( "%s.leanSide" % legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.leanSide" % legIkCTL, k=1 )
+        cmds.addAttr( legIkCTL, ln= "toeHeel",  at= "double", dv= 0 )
+        cmds.setAttr( "%s.toeHeel" % legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.toeHeel" % legIkCTL, k=1 )
+        cmds.addAttr( legIkCTL, ln= "ballRoll",  at= "double", min= 0, dv= 0 )
+        cmds.setAttr( "%s.ballRoll" % legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.ballRoll" % legIkCTL, k=1 )
+        cmds.addAttr( legIkCTL, ln= "frontTwist",  at= "double",dv= 0 )
+        cmds.setAttr( "%s.frontTwist" % legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.frontTwist" % legIkCTL, k=1 )
+        cmds.addAttr( legIkCTL, ln= "backTwist",  at= "double", dv= 0 )
+        cmds.setAttr( "%s.backTwist" % legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.backTwist" % legIkCTL, k=1 )
+        cmds.parentConstraint( legIkCTL, self.locGRP, mo=1 )
+        
+        # Toe IK Controller
+        ikJntRad= cmds.getAttr( "%s.radius" % self.legIkJnt[-1] )
+        toeIkCTL= cmds.circle( n= str(self.footJnt[1]).replace( "Jnt", "IK_CTL" ), nr= [0,0,1], r= ikJntRad*1.8, ch=0 )[0]    # toeIkCTL
+        cmds.setAttr( "%s.tx" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.ty" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.tz" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sx" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sy" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sz" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.v" % toeIkCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % toeIkCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % toeIkCTL, 18 )
+        toeIkCTLGrp= cmds.group( n="%s_GRP" % toeIkCTL, em=0 )
+        allCTLGRP.append( toeIkCTLGrp )
+        tmpCnst= cmds.parentConstraint( self.footJnt[0], toeIkCTLGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.select( "%s.cv[3:7]" % toeIkCTL )
+        cmds.scale( 1,0,1, ocp=1, r=1 )
+        cmds.select( cl=1 )
+        if self.prefix.startswith( "R_" ):
+            cmds.select( "%s.cv[0:7]" % toeIkCTL )
+            cmds.rotate( 0,0,180, r=1 )
+            cmds.select( cl=1 )
+        else:
+            pass
+        cmds.parentConstraint( self.ankleIK, toeIkCTLGrp, mo=1 )
+        cmds.parent( toeIkCTLGrp, "%s_IK_CTL_GRP" % self.prefix )
+        if self.prefix.startswith( "L_" ):
+            cmds.connectAttr( "%s.rx" % toeIkCTL, "%s.rx" % ballLoc01 )
+            cmds.connectAttr( "%s.ry" % toeIkCTL, "%s.ry" % ballLoc01 )
+            cmds.connectAttr( "%s.rz" % toeIkCTL, "%s.rz" % ballLoc01 )
+        elif self.prefix.startswith( "R_" ):
+            toeNeuMD= cmds.createNode( "multiplyDivide", n="%s_toeNeu_MD01" % self.prefix )
+            cmds.connectAttr( "%s.rx" % toeIkCTL, "%s.input1X" % toeNeuMD )
+            cmds.connectAttr( "%s.ry" % toeIkCTL, "%s.input1Y" % toeNeuMD )
+            cmds.connectAttr( "%s.rz" % toeIkCTL, "%s.input1Z" % toeNeuMD )
+            cmds.setAttr( "%s.operation" % toeNeuMD, 1 )
+            cmds.connectAttr( "%s.outputX" % toeNeuMD, "%s.rx" % ballLoc01 )
+            cmds.connectAttr( "%s.outputY" % toeNeuMD, "%s.ry" % ballLoc01 )
+            cmds.connectAttr( "%s.outputZ" % toeNeuMD, "%s.rz" % ballLoc01 )
+        else:
+            cmds.connectAttr( "%s.rx" % toeIkCTL, "%s.rx" % ballLoc01 )
+            cmds.connectAttr( "%s.ry" % toeIkCTL, "%s.ry" % ballLoc01 )
+            cmds.connectAttr( "%s.rz" % toeIkCTL, "%s.rz" % ballLoc01 )
+            
+        # Setup Reverse Foot
+        # ballRoll
+        cmds.connectAttr( "%s.ballRoll" % legIkCTL, "%s.rx" % ballLoc02 )
+        # LeanSide
+        leanSideC= cmds.createNode( "clamp", n= "%s_leanSide_C01" % self.prefix )
+        cmds.setAttr( "%s.minR" % leanSideC, -100 )
+        cmds.setAttr( "%s.maxR" % leanSideC, 0 )
+        cmds.setAttr( "%s.minG" % leanSideC, 0 )
+        cmds.setAttr( "%s.maxG" % leanSideC, 100 )
+        cmds.connectAttr( "%s.outputR" % leanSideC, "%s.rz" % self.footLoc[2] )
+        cmds.connectAttr( "%s.outputG" % leanSideC, "%s.rz" % self.footLoc[3] )
+        # ToeHeel
+        toeHeelC= cmds.createNode( "clamp", n= "%s_toeHeel_C01" % self.prefix )
+        cmds.setAttr( "%s.minG" % toeHeelC, -100 )
+        cmds.setAttr( "%s.maxG" % toeHeelC, 0 )
+        cmds.setAttr( "%s.minR" % toeHeelC, 0 )
+        cmds.setAttr( "%s.maxR" % toeHeelC, 100 )
+        cmds.connectAttr( "%s.outputR" % toeHeelC, "%s.rx" % self.footLoc[0] )
+        cmds.connectAttr( "%s.outputG" % toeHeelC, "%s.rx" % self.footLoc[1] )
+        # NeuMD
+        neuMD= cmds.createNode( "multiplyDivide", n= "%s_reverseFootNeu_MD01" % self.prefix )
+        cmds.setAttr( "%s.operation" % neuMD, 1 )
+        cmds.setAttr( "%s.input2X" % neuMD, -1 )
+        cmds.setAttr( "%s.input2Y" % neuMD, -1 )
+        cmds.setAttr( "%s.input2Z" % neuMD, -1 )
+        if self.prefix.startswith("L_"):
+            cmds.connectAttr( "%s.leanSide" % legIkCTL, "%s.input1X" % neuMD )
+            cmds.connectAttr( "%s.toeHeel" % legIkCTL, "%s.input1Y" % neuMD )
+            cmds.connectAttr( "%s.outputX" % neuMD, "%s.inputR" % leanSideC )
+            cmds.connectAttr( "%s.outputX" % neuMD, "%s.inputG" % leanSideC )
+            cmds.connectAttr( "%s.outputY" % neuMD, "%s.inputR" % toeHeelC )
+            cmds.connectAttr( "%s.outputY" % neuMD, "%s.inputG" % toeHeelC )
+            cmds.connectAttr( "%s.frontTwist" % legIkCTL, "%s.ry" % self.footLoc[0] )
+            cmds.connectAttr( "%s.backTwist" % legIkCTL, "%s.ry" % self.footLoc[1] )
+        elif self.prefix.startswith("R_"):
+            cmds.connectAttr( "%s.frontTwist" % legIkCTL, "%s.input1X" % neuMD )
+            cmds.connectAttr( "%s.backTwist" % legIkCTL, "%s.input1Y" % neuMD )
+            cmds.connectAttr( "%s.toeHeel" % legIkCTL, "%s.input1Z" % neuMD )
+            cmds.connectAttr( "%s.outputX" % neuMD, "%s.ry" % self.footLoc[0])
+            cmds.connectAttr( "%s.outputY" % neuMD, "%s.ry" % self.footLoc[1]  )
+            cmds.connectAttr( "%s.outputZ" % neuMD, "%s.inputR" % toeHeelC )
+            cmds.connectAttr( "%s.outputZ" % neuMD, "%s.inputG" % toeHeelC )
+            cmds.connectAttr( "%s.leanSide" % legIkCTL, "%s.inputR" % leanSideC )
+            cmds.connectAttr( "%s.leanSide" % legIkCTL, "%s.inputG" % leanSideC)
+        else:
+            cmds.connectAttr( "%s.leanSide" % legIkCTL, "%s.input1X" % neuMD )
+            cmds.connectAttr( "%s.toeHeel" % legIkCTL, "%s.input1Y" % neuMD )
+            cmds.connectAttr( "%s.outputX" % neuMD, "%s.inputR" % leanSideC )
+            cmds.connectAttr( "%s.outputX" % neuMD, "%s.inputG" % leanSideC )
+            cmds.connectAttr( "%s.outputY" % neuMD, "%s.inputR" % toeHeelC )
+            cmds.connectAttr( "%s.outputY" % neuMD, "%s.inputG" % toeHeelC )
+            cmds.connectAttr( "%s.frontTwist" % legIkCTL, "%s.ry" % self.footLoc[0] )
+            cmds.connectAttr( "%s.backTwist" % legIkCTL, "%s.ry" % self.footLoc[1] )
+
+        # Lock All Controller Group
+        for each in allCTLGRP:
+            cmds.setAttr( "%s.tx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.ty" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.tz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.rx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.ry" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.rz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sy" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.v" % each, e=1, l=1, k=0, cb=1 )
+        cmds.select( cl=1 )           
+        
+if __name__ == "__main__":
+    leg= cReverseFootSetup_Cl( ["L_ball_Jnt01", "L_toe_Jnt01"], ["L_leg_front_loc", "L_leg_back_loc", "L_leg_sideL_loc", "L_leg_sideR_loc"], "L_ankle_IK02", "L_ankle_FK01" )
