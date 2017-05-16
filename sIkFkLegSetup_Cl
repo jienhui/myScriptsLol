@@ -38,7 +38,7 @@ class sIkFkLegSetup_Cl():
         elif self.hipJnt.startswith( 'R_h' ):
             self.prefix = "R_leg"
         else:
-            cmds.warning( "Please use 'L_' or 'R_' for leg joint's prefix !" )
+            self.prefix= "leg"
         
         self.locGRP= cmds.group( n= "%s_loc_GRP" % self.prefix, em=1 )
         self.extraJntGRP= cmds.group( n= "%s_extraJnt_GRP" % self.prefix, em=1 )
@@ -54,9 +54,17 @@ class sIkFkLegSetup_Cl():
         
         # Create Ik, Fk & skin joint set
         self.legJnt= [ self.hipJnt, self.kneeJnt, self.ankleJnt ]
-        ankleJnt02= cmds.duplicate( self.ankleJnt )[0]
-        self.legJnt.append( ankleJnt02 )
-        cmds.parent( ankleJnt02, self.ankleJnt )
+        if cmds.listRelatives( self.ankleJnt, c=1 ) != None :
+            ballJnt= cmds.listRelatives( self.ankleJnt )
+            cmds.parent( ballJnt, w=1 )
+            ankleJnt02= cmds.duplicate( self.ankleJnt )[0]
+            self.legJnt.append( ankleJnt02 )
+            cmds.parent( ballJnt, ankleJnt02 )
+            cmds.parent( ankleJnt02, self.ankleJnt )
+        else:
+            ankleJnt02= cmds.duplicate( self.ankleJnt )[0]
+            self.legJnt.append( ankleJnt02 )
+            cmds.parent( ankleJnt02, self.ankleJnt )
         jntRad= cmds.getAttr( "%s.radius" % self.hipJnt )
         
         # IK joints
@@ -637,8 +645,7 @@ class sIkFkLegSetup_Cl():
             cmds.setAttr( "%s.sy" % each, e=1, l=1, k=0, cb=1 )
             cmds.setAttr( "%s.sz" % each, e=1, l=1, k=0, cb=1 )
             cmds.setAttr( "%s.v" % each, e=1, l=1, k=0, cb=1 )
-        cmds.select( cl=1 )
-            
+        cmds.select( cl=1 )           
         
 if __name__ == "__main__":
-    leg= sIkFkLegSetup_Cl( "R_hip_Jnt01", "R_knee_Jnt01", "R_ankle_Jnt01" )
+    leg= sIkFkLegSetup_Cl( "L_hip_Jnt01", "L_knee_Jnt01", "L_ankle_Jnt01" )
