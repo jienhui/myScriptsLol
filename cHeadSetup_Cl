@@ -1,0 +1,167 @@
+import maya.cmds as cmds
+    
+###### Head Setup Class ######
+class cHeadSetup_Cl():
+    def __init__( self, neck, head, jaw, lEye, rEye ):
+        self.neck= neck
+        self.head= head
+        self.jaw= jaw
+        self.lEye= lEye
+        self.rEye= rEye
+        
+        if cmds.objExists( self.neck ) == True:
+            if cmds.objExists( self.head ) == True:
+                if cmds.objExists( self.jaw ) == True:
+                    if cmds.objExists( self.lEye ) == True:
+                        if cmds.objExists( self.rEye ) == True:
+                            self.cHeadSetup_Fn()
+                        else:
+                            cmds.warning( "rEye Joint Not Found!" )
+                    else:
+                        cmds.warning( "lEye Joint Not Found!" )
+                else:
+                    cmds.warning( "Jaw Joint Not Found!" )
+            else:
+                cmds.warning( "Head Joint Not Found!" )
+        else:
+                cmds.warning( "Neck Joint Not Found!" )
+        
+    # Head Setup Function
+    def cHeadSetup_Fn(self):         
+        
+        allCTLGRP= []
+        self.headCTLGrp= cmds.group( n="head_CTL_GRP", em=1 )
+        headExtGrp= cmds.group( n="head_extraNodes", em=1 )
+        cmds.parent( self.neck, headExtGrp )
+        
+        # Setup ikFk head
+        neckJntRad= cmds.getAttr( "%s.radius" % self.neck )
+        neckCTL= cmds.circle( n= str(self.neck).replace( "Jnt", "CTL" ), nr= [0,1,0], r= neckJntRad*7, ch=0 )[0]
+        cmds.setAttr( "%s.v" % neckCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % neckCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % neckCTL, 17 )
+        cmds.addAttr( neckCTL, ln= "____________",  at= "enum", en= "________:" )
+        cmds.setAttr( "%s.____________" % neckCTL, e=1, cb=1, l=1 )
+        cmds.addAttr( neckCTL, ln="followBody", at="double", min= 0, max= 1, dv= 1 )
+        cmds.setAttr( "%s.followBody" % neckCTL, e=1, cb=1, k=1 )
+        self.neckCTLGrp= cmds.group( n="%s_GRP" % neckCTL, em=0 )            # self.neckCTLGrp
+        tmpCnst= cmds.parentConstraint( self.neck, self.neckCTLGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        cmds.parentConstraint( neckCTL, self.neck, mo=0, sr= ["x", "y", "z"] )
+        cmds.scaleConstraint( neckCTL, self.neck, mo=0 )
+        self.headCTL= cmds.circle( n= str(self.head).replace( "Jnt", "CTL" ), nr= [0,1,0], r= neckJntRad*7, ch=0 )[0]    # self.headCTL
+        cmds.setAttr( "%s.v" % self.headCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % self.headCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % self.headCTL, 17 )
+        self.headCtrlGrp= cmds.group( n="%s_GRP" % self.headCTL, em=0 )            # self.headCtrlGrp
+        allCTLGRP.append( self.headCTLGrp )
+        tmpCnst= cmds.parentConstraint( self.head, self.headCtrlGrp )
+        cmds.delete( tmpCnst )
+        cmds.orientConstraint( self.headCTL, self.head, mo=0 )
+        cmds.scaleConstraint( self.headCTL, self.head, mo=0 )
+        neckAimLoc= cmds.spaceLocator( n= "neck_aimUp_loc" )[0]
+        self.neckLocGrp= cmds.group( n="%s_GRP" % neckAimLoc, em=0 )        # self.neckLocGrp
+        tmpCnst= cmds.parentConstraint( self.neck, self.neckLocGrp )
+        cmds.delete( tmpCnst )
+        cmds.xform( neckAimLoc, t=[0, 0, neckJntRad*-20]  )
+        cmds.aimConstraint( self.headCTL, self.neck, mo=0, aim=[0,1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= neckAimLoc )
+        cmds.parentConstraint( neckCTL, self.headCtrlGrp, mo=1 )
+        cmds.parent( self.neckLocGrp, headExtGrp )
+        cmds.hide( self.neckLocGrp )
+        cmds.parent( self.neckCTLGrp, self.headCTLGrp )
+        cmds.parent( self.headCtrlGrp, self.headCTLGrp )
+        
+        # Setup Jaw
+        jawCTL= cmds.circle( n= str(self.jaw).replace( "Jnt", "CTL" ), nr= [0,0,1], r= neckJntRad*1.2, ch=0 )[0] 
+        cmds.setAttr( "%s.sx" % jawCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sy" % jawCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sz" % jawCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.v" % jawCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % jawCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % jawCTL, 17 )
+        jawCTLGrp= cmds.group( n= "%s_GRP" % jawCTL, em=0 )
+        allCTLGRP.append( jawCTLGrp )
+        tmpCnst= cmds.parentConstraint( self.jaw, jawCTLGrp )
+        cmds.delete( tmpCnst )
+        jaw02= cmds.listRelatives( self.jaw, c=1 )[0]
+        jaw02Pos= cmds.xform( jaw02, q=1, ws=1, t=1 )
+        cmds.select( "%s.cv[0:7]" % jawCTL )
+        cmds.move( 0, 0, (jaw02Pos[2]- (neckJntRad*2)), r=1, os=1, wd=1 )
+        cmds.select(cl=1)
+        cmds.parentConstraint( jawCTL, self.jaw, mo=0 )
+        cmds.parentConstraint( self.head, jawCTLGrp, mo=1 )
+        cmds.parent( jawCTLGrp, self.headCTLGrp )
+        
+        # Setup Eyes
+        eyeJnt= [self.lEye, self.rEye]
+        eyeCTLList= []
+        eyeCTLGrpList= []
+        
+        for each in eyeJnt:
+            aimLoc= cmds.spaceLocator( n= str(each).replace( "Jnt", "aimLoc" ) )[0]
+            aimLocGrp= cmds.group( n= "%s_GRP" % aimLoc, em=0 )
+            tmpCnst= cmds.parentConstraint( each, aimLocGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.setAttr( "%s.tz" % aimLoc, (cmds.getAttr("%s.tz" % aimLoc))+ neckJntRad*50 )
+            cmds.aimConstraint( aimLoc, each, mo=0, aim=[0,0,1], u=[0,1,0], wut="object", wuo= aimLoc )
+            ctrl= cmds.circle( n= str(each).replace( "Jnt", "CTL" ), nr= [0,0,1], r= neckJntRad*2, ch=0 )[0]
+            eyeCTLList.append( ctrl )
+            cmds.setAttr( "%s.tz" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.rx" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.ry" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.rz" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.sx" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.sy" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.sz" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%s.v" % ctrl, e=1, l=1, k=0, cb=0 )
+            cmds.setAttr( "%sShape.overrideEnabled" % ctrl, 1 )
+            cmds.setAttr( "%sShape.overrideColor" % ctrl, 17 )
+            ctrlGrp= cmds.group( n="%s_GRP" % ctrl, em=0 )
+            allCTLGRP.append( ctrlGrp )
+            eyeCTLGrpList.append( ctrlGrp )
+            tmpCnst= cmds.pointConstraint( each, ctrlGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.setAttr( "%s.tz" % ctrlGrp, (cmds.getAttr("%s.tz" % ctrlGrp))+ neckJntRad*50 )
+            cmds.parent( aimLocGrp, ctrl )
+            cmds.setAttr( "%s.v" % aimLocGrp, 0 )
+        
+        self.mainEyeCTL= cmds.circle( n= "main_eyes_CTL", nr= [0,0,1], r= neckJntRad*5, ch=0 )[0]       # self.mainEyeCTL
+        cmds.setAttr( "%s.sx" % self.mainEyeCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sy" % self.mainEyeCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.sz" % self.mainEyeCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%s.v" % self.mainEyeCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % self.mainEyeCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % self.mainEyeCTL, 17 )
+        cmds.addAttr( self.mainEyeCTL, ln= "____________",  at= "enum", en= "________:" )
+        cmds.setAttr( "%s.____________" % self.mainEyeCTL, e=1, cb=1, l=1 )
+        cmds.addAttr( self.mainEyeCTL, ln="followHead", at="double", min= 0, max= 1, dv= 0 )
+        cmds.setAttr( "%s.followHead" % self.mainEyeCTL, e=1, cb=1, k=1 )
+        mainEyeCTLGrp= cmds.group( n= "%s_GRP" % self.mainEyeCTL, em=0 )
+        allCTLGRP.append( mainEyeCTLGrp )
+        tmpCnst= cmds.parentConstraint( eyeCTLList[0], eyeCTLList[1], mainEyeCTLGrp, mo=0  )
+        cmds.delete( tmpCnst )
+        cmds.select( "%s.cv[0:7]" % self.mainEyeCTL )
+        cmds.scale( neckJntRad*2.1,1,1, r=1 )
+        cmds.select( cl=1 )
+        cmds.select( "%s.cv[1]" % self.mainEyeCTL, "%s.cv[5]" % self.mainEyeCTL )
+        cmds.scale( 1,0,1, r=1 )
+        cmds.select( cl=1 )
+        cmds.parent( eyeCTLGrpList[0], eyeCTLGrpList[1], self.mainEyeCTL )
+        cmds.parent( mainEyeCTLGrp, self.headCTLGrp )
+        
+        # Lock All Controller Group
+        for each in allCTLGRP:
+            cmds.setAttr( "%s.tx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.ty" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.tz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.rx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.ry" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.rz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sx" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sy" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.sz" % each, e=1, l=1, k=0, cb=1 )
+            cmds.setAttr( "%s.v" % each, e=1, l=1, k=0, cb=1 )
+        cmds.select( cl=1 )
+        
+if __name__ == "__main__":
+    M= cHeadSetup_Cl( "neck_Jnt01", "head_Jnt01", "jaw_Jnt01", "L_eye_Jnt01", "R_eye_Jnt01" )
