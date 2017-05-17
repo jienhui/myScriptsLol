@@ -326,4 +326,4 @@ class cReverseFootSetup_Cl():
         cmds.select( cl=1 )           
         
 if __name__ == "__main__":
-    leg= cReverseFootSetup_Cl( ["L_ball_Jnt01", "L_toe_Jnt01"], ["L_leg_front_loc", "L_leg_back_loc", "L_leg_sideL_loc", "L_leg_sideR_loc"], "L_ankle_IK02", "L_ankle_FK01" )
+    leg= cReverseFootSetup_Cl( ["R_ball_Jnt01", "R_toe_Jnt01"], ["R_leg_front_loc", "R_leg_back_loc", "R_leg_sideL_loc", "R_leg_sideR_loc"], "R_ankle_IK02", "R_ankle_FK01" )
