@@ -102,6 +102,11 @@ class sIkFkLegSetup_Cl():
             cmds.setAttr( "%s.preferredAngleY" % self.legFkJnt[1], 90 )
             cmds.setAttr( "%s.preferredAngleY" % self.legIkJnt[1], 90 )
         
+        # Leg Root Joint
+        self.legRootJnt= cmds.joint( n= str(self.hipJnt).replace( "_Jnt", "_root_Jnt" ), rad= jntRad/2 )
+        tmpCnst= cmds.parentConstraint( self.hipJnt, self.legRootJnt, mo=0  )
+        cmds.delete( tmpCnst )
+        
         # Secondary skin joints
         self.rootExtJnt= cmds.joint( n= str(self.hipJnt).replace( "_Jnt", "_extra_Jnt" ), rad= jntRad/2 )
         tmpCnst= cmds.parentConstraint( self.hipJnt, self.rootExtJnt, mo=0  )
@@ -145,7 +150,8 @@ class sIkFkLegSetup_Cl():
         self.skinJnt.append( self.thrdExtJnt )
         cmds.select( self.skinJnt )
         cmds.sets( n="%s_skinJNT" % self.prefix )
-        cmds.parent( self.legFkJnt[0], self.legIkJnt[0], self.hipJnt, self.legJntGRP )
+        cmds.parent( self.legFkJnt[0], self.legIkJnt[0], self.hipJnt, self.legRootJnt )
+        cmds.parent( self.legRootJnt, self.legJntGRP )
         cmds.select( cl=1 )
         
         # Setup FK
@@ -213,6 +219,9 @@ class sIkFkLegSetup_Cl():
         cmds.addAttr( self.legIkCTL, ln= "autoStretch",  at= "long", min= 0, max= 1, dv= 1 )
         cmds.setAttr( "%s.autoStretch" % self.legIkCTL, e=1, cb=1 )
         cmds.setAttr( "%s.autoStretch" % self.legIkCTL, k=1 )
+        cmds.addAttr( self.legIkCTL, ln= "stretchVolume",  at= "double", min= -10, max= 10, dv= 0 )                # stretchyVolume
+        cmds.setAttr( "%s.stretchVolume" % self.legIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.stretchVolume" % self.legIkCTL, k=1 )
         if cmds.getAttr( "%s.preferredAngleX" % self.legIkJnt[1] ) == 90:
             cmds.addAttr( self.legIkCTL, ln= "kneeLock",  at= "double", min= 0, max= 1, dv= 0 )
             cmds.setAttr( "%s.kneeLock" % self.legIkCTL, e=1, cb=1 )
@@ -242,17 +251,30 @@ class sIkFkLegSetup_Cl():
         cmds.setAttr( "%sShape.overrideEnabled" % self.hipIkCTL, 1 )
         cmds.setAttr( "%sShape.overrideColor" % self.hipIkCTL, 13 )
         self.hipIkCTLGRP= cmds.group( n= "%s_GRP" % self.hipIkCTL, em=0  )
-        allCTLGRP.append( self.hipIkCTLGRP )
         tmpCnst= cmds.parentConstraint( self.legIkJnt[0], self.hipIkCTLGRP, mo=0 )
         cmds.delete( tmpCnst )
         hipJntPos= cmds.xform( self.hipJnt, q=1, ws=1, t=1 )
-        cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
         if self.prefix.startswith( "L_" ) == True:
-            cmds.move( 0, 0, (hipJntPos[2]*5), r=1, os=1, wd= 1 )
+            if hipJntPos[2] < 0 :
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*-15), r=1, os=1, wd= 1 )
+            else:
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*15), r=1, os=1, wd= 1 )
         elif self.prefix.startswith( "R_" ) == True:
-            cmds.move( 0, 0, (hipJntPos[2]*-5), r=1, os=1, wd= 1 )
+            if hipJntPos[2] < 0 :
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*15), r=1, os=1, wd= 1 )
+            else:
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*-15), r=1, os=1, wd= 1 )
         else:
-            cmds.move( 0, 0, (hipJntPos[2]*5), r=1, os=1, wd= 1 )
+            if hipJntPos[2] < 0 :
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*-15), r=1, os=1, wd= 1 )
+            else:
+                cmds.select( "%s.cv[0:7]" % self.hipIkCTL )
+                cmds.move( 0, 0, (hipJntPos[2]*15), r=1, os=1, wd= 1 )
         cmds.select(cl=1) 
         cmds.parentConstraint( self.hipIkCTL, self.legIkJnt[0], mo=0 )
         
@@ -632,6 +654,48 @@ class sIkFkLegSetup_Cl():
             cmds.connectAttr( "%s.output1D" % twistCntPMA, "%s.rx" % extCTLaxList[-4] ) 
         cmds.parentConstraint( ankleJnt02, aimUpLocGrp, mo=0 )
         cmds.parent( aimUpLocGrp, self.locGRP )
+        
+        # Stretchy Volume Setup
+        stVtOnOffMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_Neu_MD01" % self.prefix )        # stVtOnOffMD
+        cmds.setAttr( "%s.operation" % stVtOnOffMD, 1 )
+        cmds.setAttr( "%s.input2X" % stVtOnOffMD, 0.1 )
+        cmds.connectAttr( "%s.stretchVolume" % self.legIkCTL, "%s.input1X" % stVtOnOffMD )
+        stVtPMMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_PM_MD01" % self.prefix )        # stVtPowMD
+        cmds.setAttr( "%s.operation" % stVtPMMD, 1 )
+        cmds.setAttr( "%s.input1X" % stVtPMMD, 0.5 )
+        cmds.setAttr( "%s.input1Y" % stVtPMMD, 0.3 )
+        cmds.setAttr( "%s.input1Z" % stVtPMMD, 0 )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2X" % stVtPMMD )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2Y" % stVtPMMD )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2Z" % stVtPMMD )
+        stVtPowMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_POW_MD01" % self.prefix )        # stVtPowMD
+        cmds.setAttr( "%s.operation" % stVtPowMD, 3 )
+        cmds.connectAttr( "%s.output" % stVtPMMD, "%s.input2" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1X" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1Y" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1Z" % stVtPowMD )
+        if cmds.getAttr( "%s.preferredAngleX" % self.legIkJnt[1] ) == 90:
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sx" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sz" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sx" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sx" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sx" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sx" % extCTLaxList[4] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[4] )
+        else:
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sy" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sz" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sy" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sy" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sy" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sy" % extCTLaxList[4] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[4] ) 
         
         # Lock All Controller Group
         for each in allCTLGRP:
