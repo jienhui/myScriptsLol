@@ -31,30 +31,31 @@ class cHeadSetup_Cl():
         
         allCTLGRP= []
         self.headCTLGrp= cmds.group( n="head_CTL_GRP", em=1 )
-        headExtGrp= cmds.group( n="head_extraNodes", em=1 )
-        cmds.parent( self.neck, headExtGrp )
+        self.headExtGrp= cmds.group( n="head_extraNodes", em=1 )
+        cmds.parent( self.neck, self.headExtGrp )
         
         # Setup ikFk head
         neckJntRad= cmds.getAttr( "%s.radius" % self.neck )
-        neckCTL= cmds.circle( n= str(self.neck).replace( "Jnt", "CTL" ), nr= [0,1,0], r= neckJntRad*7, ch=0 )[0]
-        cmds.setAttr( "%s.v" % neckCTL, e=1, l=1, k=0, cb=0 )
-        cmds.setAttr( "%sShape.overrideEnabled" % neckCTL, 1 )
-        cmds.setAttr( "%sShape.overrideColor" % neckCTL, 17 )
-        cmds.addAttr( neckCTL, ln= "____________",  at= "enum", en= "________:" )
-        cmds.setAttr( "%s.____________" % neckCTL, e=1, cb=1, l=1 )
-        cmds.addAttr( neckCTL, ln="followBody", at="double", min= 0, max= 1, dv= 1 )
-        cmds.setAttr( "%s.followBody" % neckCTL, e=1, cb=1, k=1 )
-        self.neckCTLGrp= cmds.group( n="%s_GRP" % neckCTL, em=0 )            # self.neckCTLGrp
+        self.neckCTL= cmds.circle( n= str(self.neck).replace( "Jnt", "CTL" ), nr= [0,1,0], r= neckJntRad*7, ch=0 )[0]
+        cmds.setAttr( "%s.v" % self.neckCTL, e=1, l=1, k=0, cb=0 )
+        cmds.setAttr( "%sShape.overrideEnabled" % self.neckCTL, 1 )
+        cmds.setAttr( "%sShape.overrideColor" % self.neckCTL, 17 )
+        cmds.addAttr( self.neckCTL, ln= "____________",  at= "enum", en= "________:" )
+        cmds.setAttr( "%s.____________" % self.neckCTL, e=1, cb=1, l=1 )
+        cmds.addAttr( self.neckCTL, ln="followBody", at="double", min= 0, max= 1, dv= 1 )
+        cmds.setAttr( "%s.followBody" % self.neckCTL, e=1, cb=1, k=1 )
+        cmds.setAttr( "%s.followBody" % self.neckCTL, e=1, k=1 )
+        self.neckCTLGrp= cmds.group( n="%s_GRP" % self.neckCTL, em=0 )            # self.neckCTLGrp
         tmpCnst= cmds.parentConstraint( self.neck, self.neckCTLGrp, mo=0 )
         cmds.delete( tmpCnst )
-        cmds.parentConstraint( neckCTL, self.neck, mo=0, sr= ["x", "y", "z"] )
-        cmds.scaleConstraint( neckCTL, self.neck, mo=0 )
+        cmds.parentConstraint( self.neckCTL, self.neck, mo=0, sr= ["x", "y", "z"] )
+        cmds.scaleConstraint( self.neckCTL, self.neck, mo=0 )
         self.headCTL= cmds.circle( n= str(self.head).replace( "Jnt", "CTL" ), nr= [0,1,0], r= neckJntRad*7, ch=0 )[0]    # self.headCTL
         cmds.setAttr( "%s.v" % self.headCTL, e=1, l=1, k=0, cb=0 )
         cmds.setAttr( "%sShape.overrideEnabled" % self.headCTL, 1 )
         cmds.setAttr( "%sShape.overrideColor" % self.headCTL, 17 )
         self.headCtrlGrp= cmds.group( n="%s_GRP" % self.headCTL, em=0 )            # self.headCtrlGrp
-        allCTLGRP.append( self.headCTLGrp )
+        allCTLGRP.append( self.headCtrlGrp )
         tmpCnst= cmds.parentConstraint( self.head, self.headCtrlGrp )
         cmds.delete( tmpCnst )
         cmds.orientConstraint( self.headCTL, self.head, mo=0 )
@@ -65,8 +66,8 @@ class cHeadSetup_Cl():
         cmds.delete( tmpCnst )
         cmds.xform( neckAimLoc, t=[0, 0, neckJntRad*-20]  )
         cmds.aimConstraint( self.headCTL, self.neck, mo=0, aim=[0,1,0], u=[0,0,1], wut= "objectrotation", wu=[0,0,1], wuo= neckAimLoc )
-        cmds.parentConstraint( neckCTL, self.headCtrlGrp, mo=1 )
-        cmds.parent( self.neckLocGrp, headExtGrp )
+        cmds.parentConstraint( self.neckCTL, self.headCtrlGrp, mo=1 )
+        cmds.parent( self.neckLocGrp, self.headExtGrp )
         cmds.hide( self.neckLocGrp )
         cmds.parent( self.neckCTLGrp, self.headCTLGrp )
         cmds.parent( self.headCtrlGrp, self.headCTLGrp )
@@ -100,6 +101,7 @@ class cHeadSetup_Cl():
         for each in eyeJnt:
             aimLoc= cmds.spaceLocator( n= str(each).replace( "Jnt", "aimLoc" ) )[0]
             aimLocGrp= cmds.group( n= "%s_GRP" % aimLoc, em=0 )
+            allCTLGRP.append( aimLocGrp )
             tmpCnst= cmds.parentConstraint( each, aimLocGrp, mo=0 )
             cmds.delete( tmpCnst )
             cmds.setAttr( "%s.tz" % aimLoc, (cmds.getAttr("%s.tz" % aimLoc))+ neckJntRad*50 )
@@ -136,9 +138,9 @@ class cHeadSetup_Cl():
         cmds.setAttr( "%s.____________" % self.mainEyeCTL, e=1, cb=1, l=1 )
         cmds.addAttr( self.mainEyeCTL, ln="followHead", at="double", min= 0, max= 1, dv= 0 )
         cmds.setAttr( "%s.followHead" % self.mainEyeCTL, e=1, cb=1, k=1 )
-        mainEyeCTLGrp= cmds.group( n= "%s_GRP" % self.mainEyeCTL, em=0 )
-        allCTLGRP.append( mainEyeCTLGrp )
-        tmpCnst= cmds.parentConstraint( eyeCTLList[0], eyeCTLList[1], mainEyeCTLGrp, mo=0  )
+        cmds.setAttr( "%s.followHead" % self.mainEyeCTL, e=1, k=1 )
+        self.mainEyeCTLGrp= cmds.group( n= "%s_GRP" % self.mainEyeCTL, em=0 )
+        tmpCnst= cmds.parentConstraint( eyeCTLList[0], eyeCTLList[1], self.mainEyeCTLGrp, mo=0  )
         cmds.delete( tmpCnst )
         cmds.select( "%s.cv[0:7]" % self.mainEyeCTL )
         cmds.scale( neckJntRad*2.1,1,1, r=1 )
@@ -147,7 +149,7 @@ class cHeadSetup_Cl():
         cmds.scale( 1,0,1, r=1 )
         cmds.select( cl=1 )
         cmds.parent( eyeCTLGrpList[0], eyeCTLGrpList[1], self.mainEyeCTL )
-        cmds.parent( mainEyeCTLGrp, self.headCTLGrp )
+        cmds.parent( self.mainEyeCTLGrp, self.headCTLGrp )
         
         # Lock All Controller Group
         for each in allCTLGRP:
