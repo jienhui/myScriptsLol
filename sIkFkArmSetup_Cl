@@ -241,6 +241,9 @@ class sIkFkArmSetup_Cl():
         cmds.addAttr( self.armIkCTL, ln= "autoStretch",  at= "long", min= 0, max= 1, dv= 1 )
         cmds.setAttr( "%s.autoStretch" % self.armIkCTL, e=1, cb=1 )
         cmds.setAttr( "%s.autoStretch" % self.armIkCTL, k=1 )
+        cmds.addAttr( self.armIkCTL, ln= "stretchVolume",  at= "double", min= -10, max= 10, dv= 0 )                # stretchyVolume
+        cmds.setAttr( "%s.stretchVolume" % self.armIkCTL, e=1, cb=1 )
+        cmds.setAttr( "%s.stretchVolume" % self.armIkCTL, k=1 )
         if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
             cmds.addAttr( self.armIkCTL, ln= "elbowLock",  at= "double", min= 0, max= 1, dv= 0 )
             cmds.setAttr( "%s.elbowLock" % self.armIkCTL, e=1, cb=1 )
@@ -654,6 +657,48 @@ class sIkFkArmSetup_Cl():
             cmds.connectAttr( "%s.output1D" % twistCntPMA, "%s.ry" % extCTLaxList[-4] )
         cmds.parentConstraint( wstJnt02, aimUpLocGrp, mo=0 )
         cmds.parent( aimUpLocGrp, self.locGRP )
+        
+        # Stretchy Volume Setup
+        stVtOnOffMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_Neu_MD01" % self.prefix )        # stVtOnOffMD
+        cmds.setAttr( "%s.operation" % stVtOnOffMD, 1 )
+        cmds.setAttr( "%s.input2X" % stVtOnOffMD, 0.1 )
+        cmds.connectAttr( "%s.stretchVolume" % self.armIkCTL, "%s.input1X" % stVtOnOffMD )
+        stVtPMMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_PM_MD01" % self.prefix )        # stVtPowMD
+        cmds.setAttr( "%s.operation" % stVtPMMD, 1 )
+        cmds.setAttr( "%s.input1X" % stVtPMMD, 0.5 )
+        cmds.setAttr( "%s.input1Y" % stVtPMMD, 0.3 )
+        cmds.setAttr( "%s.input1Z" % stVtPMMD, 0 )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2X" % stVtPMMD )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2Y" % stVtPMMD )
+        cmds.connectAttr( "%s.outputX" % stVtOnOffMD, "%s.input2Z" % stVtPMMD )
+        stVtPowMD= cmds.createNode( "multiplyDivide", n= "%s_stretchVt_POW_MD01" % self.prefix )        # stVtPowMD
+        cmds.setAttr( "%s.operation" % stVtPowMD, 3 )
+        cmds.connectAttr( "%s.output" % stVtPMMD, "%s.input2" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1X" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1Y" % stVtPowMD )
+        cmds.connectAttr( "%s.outputX" % stretchyMMD, "%s.input1Z" % stVtPowMD )
+        if cmds.getAttr( "%s.preferredAngleY" % self.armIkJnt[1] ) == -90:
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sy" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sz" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sy" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sy" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sy" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sy" % extCTLaxList[4] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[4] )
+        else:
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sx" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputX" % stVtPowMD, "%s.sz" % extCTLaxList[2] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sx" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[1] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sx" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputY" % stVtPowMD, "%s.sz" % extCTLaxList[3] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sx" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[0] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sx" % extCTLaxList[4] )
+            cmds.connectAttr( "%s.outputZ" % stVtPowMD, "%s.sz" % extCTLaxList[4] )        
         
         # Lock All Controller Group
         for each in allCTLGRP:
