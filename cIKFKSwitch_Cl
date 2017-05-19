@@ -1,0 +1,232 @@
+import maya.cmds as cmds
+
+###### IkFK Seamless Switching Tools ######
+class cIKFKSwitch_Cl():
+    def __init__( self, switchCTL ):
+        self.switchCTL= switchCTL
+
+        if cmds.objExists( self.switchCTL )==True:
+            self.switch= cmds.getAttr( "%s.ikFKSwitch" % self.switchCTL )
+        else:
+            cmds.warning( "Invalid IKFK Switch Controller." )
+
+    # IkFK Seamless Switching Tools Function 
+    # Switch To FK Function
+    def cSwitchToFK_Fn( self, FKCtrlList, IKJntList ):
+        self.FKCtrlList= FKCtrlList
+        self.IKJntList= IKJntList
+        
+        if cmds.objExists( self.FKCtrlList[0] )==True:
+            if cmds.objExists( self.FKCtrlList[1] )==True:
+                if cmds.objExists( self.FKCtrlList[2] )==True:
+                    if cmds.objExists( self.IKJntList[0] )==True:
+                        if cmds.objExists( self.IKJntList[1] )==True:
+                            if cmds.objExists( self.IKJntList[2] )==True:
+                                pass
+                            else:
+                                cmds.warning( "Invalid IK Wrist/Ankle Joint." )
+                        else:
+                            cmds.warning( "Invalid IK Elbow/Knee Joint." )
+                    else:
+                        cmds.warning( "Invalid IK Shoulder/Hip Joint." )
+                else:
+                    cmds.warning( "Invalid FK Wrist/Ankle Controller." )
+            else:
+                cmds.warning( "Invalid FK Elbow/Knee Controller." )
+        else:
+            cmds.warning( "Invalid FK Shoulder/Hip Controller." )
+        
+        # Create Temparary FK Controllers Hierachy
+        self.ctrlGrpList=[]
+        self.locList=[]
+        self.locGrpList= []
+        
+        for each in self.FKCtrlList:
+            ctrlGrp= cmds.listRelatives( each, p=1 )[0]
+            self.ctrlGrpList.append( ctrlGrp )
+            loc= cmds.spaceLocator( n=str(each).replace( "CTL", "loc" ) )[0]
+            self.locList.append( loc )
+            locGrp= cmds.group( n="%s_GRP" % loc, em=0 )
+            self.locGrpList.append( locGrp )
+            tmpCnst= cmds.parentConstraint( ctrlGrp, locGrp, mo=0 )
+            cmds.delete( tmpCnst )
+        
+        locNum= len( self.locList )
+        locGrpNum= len( self.locGrpList )
+        
+        if locNum == locGrpNum:
+            for each in reversed(range(1,locGrpNum)):
+                n= each
+                cmds.parent( self.locGrpList[n], self.locList[(n-1)] )
+                n= n-1
+        
+        # Mimic IK Shoulder/Hip Position
+        tmpCnst=cmds.parentConstraint( self.IKJntList[0], self.locList[0], mo=0 )
+        cmds.delete( tmpCnst )
+        locAPosX= cmds.getAttr( "%s.tx" % self.locList[0] )
+        locAPosY= cmds.getAttr( "%s.ty" % self.locList[0] )
+        locAPosZ= cmds.getAttr( "%s.tz" % self.locList[0] )
+        locAOrientX= cmds.getAttr( "%s.rx" % self.locList[0] )
+        locAOrientY= cmds.getAttr( "%s.ry" % self.locList[0] )
+        locAOrientZ= cmds.getAttr( "%s.rz" % self.locList[0] )
+        cmds.setAttr( "%s.tx" % self.FKCtrlList[0], locAPosX )
+        cmds.setAttr( "%s.ty" % self.FKCtrlList[0], locAPosY )
+        cmds.setAttr( "%s.tz" % self.FKCtrlList[0], locAPosZ )
+        cmds.setAttr( "%s.rx" % self.FKCtrlList[0], locAOrientX )
+        cmds.setAttr( "%s.ry" % self.FKCtrlList[0], locAOrientY )
+        cmds.setAttr( "%s.rz" % self.FKCtrlList[0], locAOrientZ )
+        
+        # Mimic IK Elbow/Knee Position
+        tmpCnst=cmds.parentConstraint( self.IKJntList[1], self.locList[1], mo=0 )
+        cmds.delete( tmpCnst )
+        locBPosX= cmds.getAttr( "%s.tx" % self.IKJntList[1] )
+        locBPosY= cmds.getAttr( "%s.ty" % self.IKJntList[1] )
+        locBPosZ= cmds.getAttr( "%s.tz" % self.IKJntList[1] )
+        locBOrientX= cmds.getAttr( "%s.rx" % self.IKJntList[1] )
+        locBOrientY= cmds.getAttr( "%s.ry" % self.IKJntList[1] )
+        locBOrientZ= cmds.getAttr( "%s.rz" % self.IKJntList[1] )
+        
+        if cmds.getAttr( "%s.preferredAngleY" % self.IKJntList[1] ) == -90 :
+            ctrlGrpBPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
+        elif cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
+            ctrlGrpBPos= cmds.getAttr( "%s.ty" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
+        else:
+            ctrlGrpBPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
+            
+        cmds.setAttr( "%s.ty" % self.FKCtrlList[1], locBPosY )
+        cmds.setAttr( "%s.tz" % self.FKCtrlList[1], locBPosZ )
+        cmds.setAttr( "%s.rx" % self.FKCtrlList[1], locBOrientX )
+        cmds.setAttr( "%s.ry" % self.FKCtrlList[1], locBOrientY )
+        cmds.setAttr( "%s.rz" % self.FKCtrlList[1], locBOrientZ )
+        
+        # Mimic IK Wrist/Ankle Position
+        tmpCnst=cmds.parentConstraint( self.IKJntList[2], self.locList[2], mo=0 )
+        cmds.delete( tmpCnst )
+        locCPosX= cmds.getAttr( "%s.tx" % self.IKJntList[2] )
+        locCPosY= cmds.getAttr( "%s.ty" % self.IKJntList[2] )
+        locCPosZ= cmds.getAttr( "%s.tz" % self.IKJntList[2] )
+        locOrientX= cmds.getAttr( "%s.rx" % self.IKJntList[3] )
+        locOrientY= cmds.getAttr( "%s.ry" % self.IKJntList[3] )
+        locOrientZ= cmds.getAttr( "%s.rz" % self.IKJntList[3] )
+        
+        if cmds.getAttr( "%s.preferredAngleY" % self.IKJntList[1] ) == -90 :
+            ctrlGrpCPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
+        elif cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
+            ctrlGrpCPos= cmds.getAttr( "%s.ty" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
+        else:
+            ctrlGrpCPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
+            
+        cmds.setAttr( "%s.ty" % self.FKCtrlList[2], locCPosY )
+        cmds.setAttr( "%s.tz" % self.FKCtrlList[2], locCPosZ )
+        cmds.setAttr( "%s.rx" % self.FKCtrlList[2], locOrientX )
+        cmds.setAttr( "%s.ry" % self.FKCtrlList[2], locOrientY )
+        cmds.setAttr( "%s.rz" % self.FKCtrlList[2], locOrientZ )
+        
+        #cmds.delete( self.locGrpList[0] )
+        cmds.setAttr( "%s.ikFKSwitch" % self.switchCTL, 1 )
+        print "Switched to FK.",
+        
+                  
+    # Switch To IK Function
+    def cSwitchToIK_Fn( self, IKCtrlList, FKJntList ):
+        self.IKCtrlList= IKCtrlList
+        self.FKJntList= FKJntList
+        
+        if cmds.objExists( self.IKCtrlList[0] )==True:
+            if cmds.objExists( self.IKCtrlList[1] )==True:
+                if cmds.objExists( self.IKCtrlList[2] )==True:
+                    if cmds.objExists( self.FKJntList[0] )==True:
+                        if cmds.objExists( self.FKJntList[1] )==True:
+                            if cmds.objExists( self.FKJntList[2] )==True:
+                                pass
+                            else:
+                                cmds.warning( "Invalid FK Wrist/Ankle Joint." )
+                        else:
+                            cmds.warning( "Invalid FK Elbow/Knee Joint." )
+                    else:
+                        cmds.warning( "Invalid FK Shoulder/Hip Joint." )
+                else:
+                    cmds.warning( "Invalid IK Wrist/Ankle Controller." )
+            else:
+                cmds.warning( "Invalid IK Elbow/Knee Controller." )
+        else:
+            cmds.warning( "Invalid IK Shoulder/Hip Controller." )
+        
+        # Create Temparary IK Controllers Hierachy
+        ctrlGrpList= []
+        self.locList=[]
+        self.locGrpList= []
+        
+        for each in self.IKCtrlList:
+            ctrlGrp= cmds.listRelatives( each, p=1 )[0]
+            ctrlGrpList.append( ctrlGrp )
+            loc= cmds.spaceLocator( n=str(each).replace( "CTL", "loc" ) )[0]
+            self.locList.append( loc )
+            locGrp= cmds.group( n="%s_GRP" % loc, em=0 )
+            self.locGrpList.append( locGrp )
+            tmpCnst= cmds.parentConstraint( ctrlGrp, locGrp, mo=0 )
+            cmds.delete( tmpCnst )
+            cmds.select( cl=1 )
+        
+        # Mimic Shoulder/Hip Joint Position
+        tmpCnst= cmds.parentConstraint( self.FKJntList[0], self.locList[0], mo=0 )
+        cmds.delete( tmpCnst )
+        locAPosX= cmds.getAttr( "%s.tx" % self.locList[0] )
+        locAPosY= cmds.getAttr( "%s.ty" % self.locList[0] )
+        locAPosZ= cmds.getAttr( "%s.tz" % self.locList[0] )
+        locOrientX= cmds.getAttr( "%s.rx" % self.locList[0] )
+        locOrientY= cmds.getAttr( "%s.ry" % self.locList[0] )
+        locOrientZ= cmds.getAttr( "%s.rz" % self.locList[0] )
+        cmds.setAttr( "%s.tx" % self.IKCtrlList[0], locAPosX )
+        cmds.setAttr( "%s.ty" % self.IKCtrlList[0], locAPosY )
+        cmds.setAttr( "%s.tz" % self.IKCtrlList[0], locAPosZ )
+        
+        locB= cmds.spaceLocator( n=str(self.IKCtrlList[1]).replace( "CTL", "locB" ) )[0]
+        locBGrp= cmds.group( n="%s_GRP" % locB, em=0 ) 
+        cmds.setAttr( "%s.tz" % locB, -30 ) 
+        tmpCnst= cmds.parentConstraint(self.FKJntList[1], locBGrp, mo=0 )
+        cmds.delete( tmpCnst )
+        
+        # Mimic Elbow/Knee Joint Position
+        tmpCnst= cmds.parentConstraint( locB, self.locList[1], mo=0 )
+        cmds.delete( tmpCnst )
+        locBPosX= cmds.getAttr( "%s.tx" % self.locList[1] )
+        locBPosY= cmds.getAttr( "%s.ty" % self.locList[1] )
+        locBPosZ= cmds.getAttr( "%s.tz" % self.locList[1] )
+        cmds.setAttr( "%s.tx" % self.IKCtrlList[1], locBPosX )
+        cmds.setAttr( "%s.ty" % self.IKCtrlList[1], locBPosY )
+        cmds.setAttr( "%s.tz" % self.IKCtrlList[1], locBPosZ )
+        
+        # Hand/Leg CTL Rotation Value
+        tmpCnst= cmds.parentConstraint( self.FKJntList[2], self.locList[2], mo=0 )
+        cmds.delete( tmpCnst )
+        locCPosX= cmds.getAttr( "%s.tx" % self.locList[2] )
+        locCPosY= cmds.getAttr( "%s.ty" % self.locList[2] )
+        locCPosZ= cmds.getAttr( "%s.tz" % self.locList[2] )
+        locCOrientX= cmds.getAttr( "%s.rx" % self.locList[2] )
+        locCOrientY= cmds.getAttr( "%s.ry" % self.locList[2] )
+        locCOrientZ= cmds.getAttr( "%s.rz" % self.locList[2] )
+        cmds.setAttr( "%s.tx" % self.IKCtrlList[2], locCPosX )
+        cmds.setAttr( "%s.ty" % self.IKCtrlList[2], locCPosY )
+        cmds.setAttr( "%s.tz" % self.IKCtrlList[2], locCPosZ )
+        cmds.setAttr( "%s.rx" % self.IKCtrlList[2], locCOrientX )
+        cmds.setAttr( "%s.ry" % self.IKCtrlList[2], locCOrientY )
+        cmds.setAttr( "%s.rz" % self.IKCtrlList[2], locCOrientZ )
+
+        cmds.delete( self.locGrpList[0], self.locGrpList[1], self.locGrpList[2], locBGrp )
+        cmds.setAttr( "%s.ikFKSwitch" % self.switchCTL, 0 )
+        print "Switched to IK.",
+
+
+if __name__ == "__main__":
+    leg= cIKFKSwitch_Cl( "L_arm_extra_CTL" )
+    if leg.switch == 0 :
+        toFK= leg.cSwitchToFK_Fn( ["L_shoulder_FK01_CTL", "L_elbow_FK01_CTL", "L_wrist_FK01_CTL"], ["L_shoulder_IK01", "L_elbow_IK01", "L_wrist_IK01", "L_wrist_IK02"] )
+    else:
+        toIK= leg.cSwitchToIK_Fn( ["L_shoulder_IK01_CTL", "L_arm_pv_CTL", "L_armIK_CTL"], ["L_shoulder_FK01", "L_elbow_FK01", "L_wrist_FK01"] )
