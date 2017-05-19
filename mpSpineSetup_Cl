@@ -176,7 +176,7 @@ class mpSpineSetup_Cl():
         cmds.setAttr( "%s.secondaryCTL" % self.centerCTL, e=1, cb=1 )
         self.centerCTLGrp= cmds.group( n="%s_GRP" % self.centerCTL, em=0 )
         allCTLGRP.append( self.centerCTLGrp )
-        tmpCnst= cmds.parentConstraint( self.ikCTLList[0], self.ikCTLList[1], self.centerCTLGrp, mo=0 )
+        tmpCnst= cmds.parentConstraint( self.ikCTLList[0], self.centerCTLGrp, mo=0 )
         cmds.delete( tmpCnst )
         cmds.parent( self.spineCTLGrp, self.centerCTL )
         cmds.connectAttr( "%s.secondaryCTL" % self.centerCTL, "%s.v" % self.spineIKCTLGrp  )
@@ -255,7 +255,7 @@ class mpSpineSetup_Cl():
         spineLen= cmds.getAttr( "%s.distance" % tmpDBb )
         lenRatio= spineLen/allLen                
         cmds.setAttr( "%s.uValue" % self.MPList[1], lenRatio )
-        cmds.delete( tmpDBb, tmpDBa, tmpDictLocC, tmpDictLocB, tmpDictLocC )
+        cmds.delete( tmpDBb, tmpDBa, tmpDictLocA, tmpDictLocB, tmpDictLocC )
         
         # skin spine curve
         cmds.skinCluster( self.drvJntList[0], self.drvJntList[1], self.drvJntList[2], self.spineCrv, mi=2, dr=2, n= "%sShape_skinCluster" % self.spineCrv )
