@@ -17,64 +17,107 @@ class Form(QDialog):
         # Layout
         mainLayout= QGridLayout()
         mainLayout.setSpacing(5)
-        mainLayout.addWidget( self.grpBox("Right Arm", "R_arm_extra_CTL"), 0, 0 )
-        mainLayout.addWidget( self.grpBox("Left Arm", "L_arm_extra_CTL"), 0, 1 )
-        mainLayout.addWidget( self.grpBox("Right Leg", "R_leg_extra_CTL"), 1, 0 )
-        mainLayout.addWidget( self.grpBox("Left Leg", "L_leg_extra_CTL"), 1, 1 )
+        mainLayout.addWidget( self.rAgrpBox(), 0, 0 )
+        mainLayout.addWidget( self.lAgrpBox(), 0, 1 )
+        mainLayout.addWidget( self.rLgrpBox(), 1, 0 )
+        mainLayout.addWidget( self.lLgrpBox(), 1, 1 )
         # Window Structure
         self.setLayout(mainLayout)
         self.resize( 260, 120 )
         self.setWindowTitle("Seamless IK/FK Switch")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         
-    def grpBox(self, name, extCTL ):
-        self.name= name
-        self.extCTL= extCTL
+    def rAgrpBox(self):
+               
+        rAgbLayout= QVBoxLayout()
+        rAgbBox= QGroupBox("Right Arm")
+        self.rAswitchBttn= QPushButton( "Switch" )
+        rAgbLayout.addWidget( self.rAswitchBttn )
+        rAgbBox.setLayout( rAgbLayout )
         
-        gbLayout= QVBoxLayout()
-        gbBox= QGroupBox( self.name )
+        self.rAswitchBttn.clicked.connect( self.rArmSwitch )
+        return rAgbBox
         
-        gbLayout.addWidget( self.switchBttn )
-        gbBox.setLayout( gbLayout )
+    def lAgrpBox(self):
+               
+        lAgbLayout= QVBoxLayout()
+        lAgbBox= QGroupBox("Left Arm")
+        self.lAswitchBttn= QPushButton( "Switch" )
+        lAgbLayout.addWidget( self.lAswitchBttn )
+        lAgbBox.setLayout( lAgbLayout )    
         
-        if self.extCTL== "Left Arm" :
-            switchValue= cmds.getAttr( "%s.ikFKSwitch" % self.extCTL )
-            if switchValue == 0 :
-                self.switchBttn.clicked.connect( self.cSwitchToFK_Fn(["L_shoulder_FK01_CTL", "L_elbow_FK01_CTL", "L_wrist_FK01_CTL"], ["L_shoulder_IK01", "L_elbow_IK01", "L_wrist_IK01", "L_wrist_IK02"]) )
-                self.switchBttn= QPushButton( "FK" )
-            else:
-                self.switchBttn.clicked.connect( self.cSwitchToIK_Fn(["L_shoulder_IK01_CTL", "L_arm_pv_CTL", "L_armIK_CTL"], ["L_shoulder_FK01", "L_elbow_FK01", "L_wrist_FK01"]) )
-                self.switchBttn= QPushButton( "IK" )
+        self.lAswitchBttn.clicked.connect( self.lArmSwitch )
+        return lAgbBox
         
-        if self.extCTL== "Right Arm" :
-            switchValue= cmds.getAttr( "%s.ikFKSwitch" % self.extCTL )
-            if switchValue == 0 :
-                self.switchBttn.clicked.connect( self.cSwitchToFK_Fn(["R_shoulder_FK01_CTL", "R_elbow_FK01_CTL", "R_wrist_FK01_CTL"], ["R_shoulder_IK01", "R_elbow_IK01", "R_wrist_IK01", "R_wrist_IK02"]) )
-                self.switchBttn= QPushButton( "FK" )
-            else:
-                self.switchBttn.clicked.connect( self.cSwitchToIK_Fn(["R_shoulder_IK01_CTL", "R_arm_pv_CTL", "R_armIK_CTL"], ["R_shoulder_FK01", "R_elbow_FK01", "R_wrist_FK01"]) )
-                self.switchBttn= QPushButton( "IK" )
+    def rLgrpBox(self):
+               
+        rLgbLayout= QVBoxLayout()
+        rLgbBox= QGroupBox("Right Leg")
+        self.rLswitchBttn= QPushButton( "Switch" )
+        rLgbLayout.addWidget( self.rLswitchBttn )
+        rLgbBox.setLayout( rLgbLayout )    
+
+        self.rLswitchBttn.clicked.connect( self.rLegSwitch )
+        return rLgbBox
+    
+    def lLgrpBox(self):
+               
+        lLgbLayout= QVBoxLayout()
+        lLgbBox= QGroupBox("Left Leg")
+        self.lLswitchBttn= QPushButton( "Switch" )
+        lLgbLayout.addWidget( self.lLswitchBttn )
+        lLgbBox.setLayout( lLgbLayout )
         
-        if self.extCTL== "Left Leg" :
-            switchValue= cmds.getAttr( "%s.ikFKSwitch" % self.extCTL )
-            if switchValue == 0 :
-                self.switchBttn.clicked.connect( self.cSwitchToFK_Fn(["L_hip_FK01_CTL", "L_knee_FK01_CTL", "L_ankle_FK01_CTL"], ["L_hip_IK01", "L_knee_IK01", "L_ankle_IK01", "L_ankle_IK02"]) )
-                self.switchBttn= QPushButton( "FK" )
-            else:
-                self.switchBttn.clicked.connect( self.cSwitchToIK_Fn(["L_hip_IK01_CTL", "L_leg_pv_CTL", "L_legIK_CTL"], ["L_hip_FK01", "L_knee_FK01", "L_ankle_FK01"]) )
-                self.switchBttn= QPushButton( "IK" )
+        self.lLswitchBttn.clicked.connect( self.lLegSwitch )
+        return lLgbBox
         
-        if self.extCTL== "Right Leg" :
-            switchValue= cmds.getAttr( "%s.ikFKSwitch" % self.extCTL )
-            if switchValue == 0 :
-                self.switchBttn.clicked.connect( self.cSwitchToFK_Fn(["R_hip_FK01_CTL", "R_knee_FK01_CTL", "R_ankle_FK01_CTL"], ["R_hip_IK01", "R_knee_IK01", "R_ankle_IK01", "R_ankle_IK02"]) )
-                self.switchBttn= QPushButton( "FK" )
-            else:
-                self.switchBttn.clicked.connect( self.cSwitchToIK_Fn(["R_hip_IK01_CTL", "L_leg_pv_CTL", "R_legIK_CTL"], ["R_hip_FK01", "R_knee_FK01", "R_ankle_FK01"]) )
-                self.switchBttn= QPushButton( "IK" )
                 
 ###########################################################################################
     # IkFK Seamless Switching Tools Function 
+    def lArmSwitch( self ):
+        switchValue= cmds.getAttr("L_arm_extra_CTL.ikFKSwitch")
+        if switchValue == 0 :
+            self.cSwitchToFK_Fn(["L_shoulder_FK01_CTL", "L_elbow_FK01_CTL", "L_wrist_FK01_CTL"], ["L_shoulder_IK01", "L_elbow_IK01", "L_wrist_IK01", "L_wrist_IK02"])
+            cmds.setAttr( "L_arm_extra_CTL.ikFKSwitch", 1 )
+            print "Switched Left Arm To FK.",
+        else:
+            self.cSwitchToIK_Fn(["L_shoulder_IK01_CTL", "L_arm_pv_CTL", "L_armIK_CTL"], ["L_shoulder_FK01", "L_elbow_FK01", "L_wrist_FK01"])
+            cmds.setAttr( "L_arm_extra_CTL.ikFKSwitch", 0 )
+            print "Switched Left Arm To IK."
+    
+    def rArmSwitch(self):
+        switchValue= cmds.getAttr("R_arm_extra_CTL.ikFKSwitch")
+        if switchValue == 0 :
+            self.cSwitchToFK_Fn(["R_shoulder_FK01_CTL", "R_elbow_FK01_CTL", "R_wrist_FK01_CTL"], ["R_shoulder_IK01", "R_elbow_IK01", "R_wrist_IK01", "R_wrist_IK02"])
+            cmds.setAttr( "R_arm_extra_CTL.ikFKSwitch", 1 )
+            print "Switched Right Arm To FK.", 
+        else:
+            self.cSwitchToIK_Fn(["R_shoulder_IK01_CTL", "R_arm_pv_CTL", "R_armIK_CTL"], ["R_shoulder_FK01", "R_elbow_FK01", "R_wrist_FK01"])
+            cmds.setAttr( "R_arm_extra_CTL.ikFKSwitch", 0 )
+            print "Switched Right Arm To IK."
+    
+    def lLegSwitch(self):
+        switchValue= cmds.getAttr( "L_leg_extra_CTL.ikFKSwitch" )
+        if switchValue == 0 :
+            self.cSwitchToFK_Fn(["L_hip_FK01_CTL", "L_knee_FK01_CTL", "L_ankle_FK01_CTL"], ["L_hip_IK01", "L_knee_IK01", "L_ankle_IK01", "L_ankle_IK02"])
+            cmds.setAttr( "L_leg_extra_CTL.ikFKSwitch", 1 )
+            print "Switched Left Leg To FK.",
+        else:
+            self.cSwitchToIK_Fn(["L_hip_IK01_CTL", "L_leg_pv_CTL", "L_legIK_CTL"], ["L_hip_FK01", "L_knee_FK01", "L_ankle_FK01"])
+            cmds.setAttr( "L_leg_extra_CTL.ikFKSwitch", 0 )
+            print "Switched Left Leg To IK."
+    
+    def rLegSwitch(self):    
+        switchValue= cmds.getAttr("R_leg_extra_CTL.ikFKSwitch" )
+        if switchValue == 0 :
+            self.cSwitchToFK_Fn(["R_hip_FK01_CTL", "R_knee_FK01_CTL", "R_ankle_FK01_CTL"], ["R_hip_IK01", "R_knee_IK01", "R_ankle_IK01", "R_ankle_IK02"])
+            cmds.setAttr( "R_leg_extra_CTL.ikFKSwitch", 1 )
+            print "Switched Right Leg To FK.",
+        else:
+            self.cSwitchToIK_Fn(["R_hip_IK01_CTL", "R_leg_pv_CTL", "R_legIK_CTL"], ["R_hip_FK01", "R_knee_FK01", "R_ankle_FK01"])
+            cmds.setAttr( "R_leg_extra_CTL.ikFKSwitch", 0 )
+            print "Switched Right Leg To IK."
+        
     # Switch To FK Function
     def cSwitchToFK_Fn( self, FKCtrlList, IKJntList ):
         self.FKCtrlList= FKCtrlList
@@ -151,16 +194,19 @@ class Form(QDialog):
         locBOrientZ= cmds.getAttr( "%s.rz" % self.IKJntList[1] )
         
         if cmds.getAttr( "%s.preferredAngleY" % self.IKJntList[1] ) == -90 :
-            ctrlGrpBPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
-            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
-        elif cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
-            ctrlGrpBPos= cmds.getAttr( "%s.ty" % self.ctrlGrpList[1] )
-            cmds.setAttr( "%s.ty" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
+            ctrlGrpBPosX= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPosX) )
         else:
-            ctrlGrpBPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
-            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX - ctrlGrpBPos) )
+            ctrlGrpBPosX= cmds.getAttr( "%s.tx" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[1], (locBPosX + ctrlGrpBPosX) )
+        
+        if cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
+            ctrlGrpBPosY= cmds.getAttr( "%s.ty" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[1], (locBPosY - ctrlGrpBPosY) )
+        else:
+            ctrlGrpBPosY= cmds.getAttr( "%s.ty" % self.ctrlGrpList[1] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[1], (locBPosY + ctrlGrpBPosY) ) 
             
-        cmds.setAttr( "%s.ty" % self.FKCtrlList[1], locBPosY )
         cmds.setAttr( "%s.tz" % self.FKCtrlList[1], locBPosZ )
         cmds.setAttr( "%s.rx" % self.FKCtrlList[1], locBOrientX )
         cmds.setAttr( "%s.ry" % self.FKCtrlList[1], locBOrientY )
@@ -177,25 +223,25 @@ class Form(QDialog):
         locOrientZ= cmds.getAttr( "%s.rz" % self.IKJntList[3] )
         
         if cmds.getAttr( "%s.preferredAngleY" % self.IKJntList[1] ) == -90 :
-            ctrlGrpCPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
-            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
-        elif cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
-            ctrlGrpCPos= cmds.getAttr( "%s.ty" % self.ctrlGrpList[2] )
-            cmds.setAttr( "%s.ty" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
+            ctrlGrpCPosX= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPosX) )
         else:
-            ctrlGrpCPos= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
-            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX - ctrlGrpCPos) )
-            
-        cmds.setAttr( "%s.ty" % self.FKCtrlList[2], locCPosY )
+            ctrlGrpCPosX= cmds.getAttr( "%s.tx" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.tx" % self.FKCtrlList[2], (locCPosX + ctrlGrpCPosX) )
+        
+        if cmds.getAttr( "%s.preferredAngleX" % self.IKJntList[1] ) == 90 :
+            ctrlGrpCPosY= cmds.getAttr( "%s.ty" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[2], (locCPosY - ctrlGrpCPosY) )
+        else:
+            ctrlGrpCPosY= cmds.getAttr( "%s.ty" % self.ctrlGrpList[2] )
+            cmds.setAttr( "%s.ty" % self.FKCtrlList[2], (locCPosY + ctrlGrpCPosY) )  
+
         cmds.setAttr( "%s.tz" % self.FKCtrlList[2], locCPosZ )
         cmds.setAttr( "%s.rx" % self.FKCtrlList[2], locOrientX )
         cmds.setAttr( "%s.ry" % self.FKCtrlList[2], locOrientY )
         cmds.setAttr( "%s.rz" % self.FKCtrlList[2], locOrientZ )
         
-        #cmds.delete( self.locGrpList[0] )
-        cmds.setAttr( "%s.ikFKSwitch" % self.switchCTL, 1 )
-        print "Switched to FK.",
-        
+        cmds.delete( self.locGrpList[0] )
                   
     # Switch To IK Function
     def cSwitchToIK_Fn( self, IKCtrlList, FKJntList ):
@@ -253,7 +299,14 @@ class Form(QDialog):
         
         locB= cmds.spaceLocator( n=str(self.IKCtrlList[1]).replace( "CTL", "locB" ) )[0]
         locBGrp= cmds.group( n="%s_GRP" % locB, em=0 ) 
-        cmds.setAttr( "%s.tz" % locB, -30 ) 
+        if self.FKJntList[1].startswith( "L_elbow" ):
+            cmds.setAttr( "%s.tz" % locB, -80 )
+        if self.FKJntList[1].startswith( "R_elbow" ):
+            cmds.setAttr( "%s.tz" % locB, 80 )
+        if self.FKJntList[1].startswith( "L_knee" ):
+            cmds.setAttr( "%s.tz" % locB, 80 )
+        if self.FKJntList[1].startswith( "R_knee" ):
+            cmds.setAttr( "%s.tz" % locB, -80 )
         tmpCnst= cmds.parentConstraint(self.FKJntList[1], locBGrp, mo=0 )
         cmds.delete( tmpCnst )
         
@@ -274,18 +327,29 @@ class Form(QDialog):
         locCPosY= cmds.getAttr( "%s.ty" % self.locList[2] )
         locCPosZ= cmds.getAttr( "%s.tz" % self.locList[2] )
         locCOrientX= cmds.getAttr( "%s.rx" % self.locList[2] )
+        if locCOrientX > 120 :
+            locCOrientX= locCOrientX -180
+        elif locCOrientX < -120 :
+            locCOrientX= locCOrientX +180
         locCOrientY= cmds.getAttr( "%s.ry" % self.locList[2] )
         locCOrientZ= cmds.getAttr( "%s.rz" % self.locList[2] )
         cmds.setAttr( "%s.tx" % self.IKCtrlList[2], locCPosX )
         cmds.setAttr( "%s.ty" % self.IKCtrlList[2], locCPosY )
         cmds.setAttr( "%s.tz" % self.IKCtrlList[2], locCPosZ )
         cmds.setAttr( "%s.rx" % self.IKCtrlList[2], locCOrientX )
-        cmds.setAttr( "%s.ry" % self.IKCtrlList[2], locCOrientY )
+        
+        if self.IKCtrlList[2].startswith( "L_wrist" ):
+            cmds.setAttr( "%s.ry" % self.IKCtrlList[2], (locCOrientY) )
+        if self.IKCtrlList[2].startswith( "R_wrist" ):
+            cmds.setAttr( "%s.ry" % self.IKCtrlList[2], (locCOrientY) )
+        if self.IKCtrlList[2].startswith( "L_ankle" ):
+            cmds.setAttr( "%s.ry" % self.IKCtrlList[2], (locCOrientY - 9) )
+        if self.IKCtrlList[2].startswith( "R_ankle" ):
+            cmds.setAttr( "%s.ry" % self.IKCtrlList[2], (locCOrientY - 9) )
+            
         cmds.setAttr( "%s.rz" % self.IKCtrlList[2], locCOrientZ )
 
         cmds.delete( self.locGrpList[0], self.locGrpList[1], self.locGrpList[2], locBGrp )
-        cmds.setAttr( "%s.ikFKSwitch" % self.switchCTL, 0 )
-        print "Switched to IK."
 
 if __name__ == "__main__" :
     a= Form()
