@@ -17,21 +17,22 @@ class Form(QDialog):
         # Layout
         mainLayout= QGridLayout()
         mainLayout.setSpacing(5)
-        mainLayout.addWidget( self.grpBox(), 0, 0 )
-        mainLayout.addWidget( self.grpBox(), 0, 1 )
-        mainLayout.addWidget( self.grpBox(), 1, 0 )
-        mainLayout.addWidget( self.grpBox(), 1, 1 )
+        mainLayout.addWidget( self.grpBox("Right Arm"), 0, 0 )
+        mainLayout.addWidget( self.grpBox("Left Arm"), 0, 1 )
+        mainLayout.addWidget( self.grpBox("Right Leg"), 1, 0 )
+        mainLayout.addWidget( self.grpBox("Left Leg"), 1, 1 )
         # Window Structure
         self.setLayout(mainLayout)
-        self.resize( 250, 120 )
-        self.setWindowTitle("Seamless Switch v1.0")
+        self.resize( 260, 120 )
+        self.setWindowTitle("Seamless IK/FK Switch")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         
-    def grpBox(self):
+    def grpBox(self, name ):
+        self.name= name
         gbLayout= QVBoxLayout()
-        gbBox= QGroupBox("Auto Prop Rig")
+        gbBox= QGroupBox( self.name )
 
-        self.switchBttn= QPushButton( "Rig" )
+        self.switchBttn= QPushButton( "Switch" )
         
         gbLayout.addWidget( self.switchBttn )
         gbBox.setLayout( gbLayout )
