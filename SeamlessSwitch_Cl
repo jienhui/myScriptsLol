@@ -1,0 +1,45 @@
+from PySide.QtGui import *
+from PySide.QtCore import *
+import maya.OpenMayaUI as mui
+import maya.cmds as cmds
+from shiboken import wrapInstance
+
+########################################################################################### 
+
+# Main UI
+def mayaMainWindow():
+    mainWindow= mui.MQtUtil.mainWindow()
+    return wrapInstance(long(mainWindow), QWidget)
+
+class Form(QDialog):
+    def __init__(self, parent=mayaMainWindow()):
+        super(Form, self).__init__()
+        # Layout
+        mainLayout= QGridLayout()
+        mainLayout.setSpacing(5)
+        mainLayout.addWidget( self.grpBox(), 0, 0 )
+        mainLayout.addWidget( self.grpBox(), 0, 1 )
+        mainLayout.addWidget( self.grpBox(), 1, 0 )
+        mainLayout.addWidget( self.grpBox(), 1, 1 )
+        # Window Structure
+        self.setLayout(mainLayout)
+        self.resize( 250, 120 )
+        self.setWindowTitle("Seamless Switch v1.0")
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        
+    def grpBox(self):
+        gbLayout= QVBoxLayout()
+        gbBox= QGroupBox("Auto Prop Rig")
+
+        self.switchBttn= QPushButton( "Rig" )
+        
+        gbLayout.addWidget( self.switchBttn )
+        gbBox.setLayout( gbLayout )
+    
+        #self.switchBttn.clicked.connect( self.PropAutoRig )
+
+        return gbBox
+
+if __name__ == "__main__" :
+    a= Form()
+    a.show()
