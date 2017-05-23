@@ -31,8 +31,16 @@ class Form(QDialog):
                
         rAgbLayout= QVBoxLayout()
         rAgbBox= QGroupBox("Right Arm")
-        self.rAswitchBttn= QPushButton( "Switch" )
+        self.rAswitchBttn= QPushButton()
         rAgbLayout.addWidget( self.rAswitchBttn )
+        
+        if cmds.getAttr("R_arm_extra_CTL.ikFKSwitch") == 1:
+            self.rAswitchBttn.setStyleSheet("background-color: grey ")
+            self.rAswitchBttn.setText( "FK" )
+        else:
+            self.rAswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.rAswitchBttn.setText( "IK" ) 
+        
         rAgbBox.setLayout( rAgbLayout )
         
         self.rAswitchBttn.clicked.connect( self.rArmSwitch )
@@ -42,8 +50,16 @@ class Form(QDialog):
                
         lAgbLayout= QVBoxLayout()
         lAgbBox= QGroupBox("Left Arm")
-        self.lAswitchBttn= QPushButton( "Switch" )
+        self.lAswitchBttn= QPushButton()
         lAgbLayout.addWidget( self.lAswitchBttn )
+        
+        if cmds.getAttr("L_arm_extra_CTL.ikFKSwitch") == 1:
+            self.lAswitchBttn.setStyleSheet("background-color: grey ")
+            self.lAswitchBttn.setText( "FK" )
+        else:
+            self.lAswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.lAswitchBttn.setText( "IK" ) 
+        
         lAgbBox.setLayout( lAgbLayout )    
         
         self.lAswitchBttn.clicked.connect( self.lArmSwitch )
@@ -53,8 +69,16 @@ class Form(QDialog):
                
         rLgbLayout= QVBoxLayout()
         rLgbBox= QGroupBox("Right Leg")
-        self.rLswitchBttn= QPushButton( "Switch" )
+        self.rLswitchBttn= QPushButton()
         rLgbLayout.addWidget( self.rLswitchBttn )
+        
+        if cmds.getAttr("R_leg_extra_CTL.ikFKSwitch") == 1:
+            self.rLswitchBttn.setStyleSheet("background-color: grey ")
+            self.rLswitchBttn.setText( "FK" )
+        else:
+            self.rLswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.rLswitchBttn.setText( "IK" ) 
+        
         rLgbBox.setLayout( rLgbLayout )    
 
         self.rLswitchBttn.clicked.connect( self.rLegSwitch )
@@ -64,8 +88,16 @@ class Form(QDialog):
                
         lLgbLayout= QVBoxLayout()
         lLgbBox= QGroupBox("Left Leg")
-        self.lLswitchBttn= QPushButton( "Switch" )
+        self.lLswitchBttn= QPushButton()
         lLgbLayout.addWidget( self.lLswitchBttn )
+        
+        if cmds.getAttr("L_leg_extra_CTL.ikFKSwitch") == 1:
+            self.lLswitchBttn.setStyleSheet("background-color: grey ")
+            self.lLswitchBttn.setText( "FK" )
+        else:
+            self.lLswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.lLswitchBttn.setText( "IK" ) 
+        
         lLgbBox.setLayout( lLgbLayout )
         
         self.lLswitchBttn.clicked.connect( self.lLegSwitch )
@@ -79,10 +111,14 @@ class Form(QDialog):
         if switchValue == 0 :
             self.cSwitchToFK_Fn(["L_shoulder_FK01_CTL", "L_elbow_FK01_CTL", "L_wrist_FK01_CTL"], ["L_shoulder_IK01", "L_elbow_IK01", "L_wrist_IK01", "L_wrist_IK02"])
             cmds.setAttr( "L_arm_extra_CTL.ikFKSwitch", 1 )
+            self.lAswitchBttn.setStyleSheet("background-color: grey ")
+            self.lAswitchBttn.setText( "FK" )
             print "Switched Left Arm To FK.",
         else:
             self.cSwitchToIK_Fn(["L_shoulder_IK01_CTL", "L_arm_pv_CTL", "L_armIK_CTL"], ["L_shoulder_FK01", "L_elbow_FK01", "L_wrist_FK01"])
             cmds.setAttr( "L_arm_extra_CTL.ikFKSwitch", 0 )
+            self.lAswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.lAswitchBttn.setText( "IK" )
             print "Switched Left Arm To IK."
     
     def rArmSwitch(self):
@@ -90,10 +126,14 @@ class Form(QDialog):
         if switchValue == 0 :
             self.cSwitchToFK_Fn(["R_shoulder_FK01_CTL", "R_elbow_FK01_CTL", "R_wrist_FK01_CTL"], ["R_shoulder_IK01", "R_elbow_IK01", "R_wrist_IK01", "R_wrist_IK02"])
             cmds.setAttr( "R_arm_extra_CTL.ikFKSwitch", 1 )
+            self.rAswitchBttn.setStyleSheet("background-color: grey ")
+            self.rAswitchBttn.setText( "FK" )
             print "Switched Right Arm To FK.", 
         else:
             self.cSwitchToIK_Fn(["R_shoulder_IK01_CTL", "R_arm_pv_CTL", "R_armIK_CTL"], ["R_shoulder_FK01", "R_elbow_FK01", "R_wrist_FK01"])
             cmds.setAttr( "R_arm_extra_CTL.ikFKSwitch", 0 )
+            self.rAswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.rAswitchBttn.setText( "IK" )
             print "Switched Right Arm To IK."
     
     def lLegSwitch(self):
@@ -101,10 +141,14 @@ class Form(QDialog):
         if switchValue == 0 :
             self.cSwitchToFK_Fn(["L_hip_FK01_CTL", "L_knee_FK01_CTL", "L_ankle_FK01_CTL"], ["L_hip_IK01", "L_knee_IK01", "L_ankle_IK01", "L_ankle_IK02"])
             cmds.setAttr( "L_leg_extra_CTL.ikFKSwitch", 1 )
+            self.lLswitchBttn.setStyleSheet("background-color: grey ")
+            self.lLswitchBttn.setText( "FK" )
             print "Switched Left Leg To FK.",
         else:
             self.cSwitchToIK_Fn(["L_hip_IK01_CTL", "L_leg_pv_CTL", "L_legIK_CTL"], ["L_hip_FK01", "L_knee_FK01", "L_ankle_FK01"])
             cmds.setAttr( "L_leg_extra_CTL.ikFKSwitch", 0 )
+            self.lLswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.lLswitchBttn.setText( "IK" )
             print "Switched Left Leg To IK."
     
     def rLegSwitch(self):    
@@ -112,10 +156,14 @@ class Form(QDialog):
         if switchValue == 0 :
             self.cSwitchToFK_Fn(["R_hip_FK01_CTL", "R_knee_FK01_CTL", "R_ankle_FK01_CTL"], ["R_hip_IK01", "R_knee_IK01", "R_ankle_IK01", "R_ankle_IK02"])
             cmds.setAttr( "R_leg_extra_CTL.ikFKSwitch", 1 )
+            self.rLswitchBttn.setStyleSheet("background-color: grey ")
+            self.rLswitchBttn.setText( "FK" )
             print "Switched Right Leg To FK.",
         else:
             self.cSwitchToIK_Fn(["R_hip_IK01_CTL", "R_leg_pv_CTL", "R_legIK_CTL"], ["R_hip_FK01", "R_knee_FK01", "R_ankle_FK01"])
             cmds.setAttr( "R_leg_extra_CTL.ikFKSwitch", 0 )
+            self.rLswitchBttn.setStyleSheet("background-color: dark grey ")
+            self.rLswitchBttn.setText( "IK" )
             print "Switched Right Leg To IK."
         
     # Switch To FK Function
