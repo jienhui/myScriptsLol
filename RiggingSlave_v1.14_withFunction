@@ -3,6 +3,7 @@ from PySide.QtCore import *
 import maya.OpenMayaUI as mui
 import maya.cmds as cmds
 from shiboken import wrapInstance
+import proxySkeleton_Cl as PS
 
 ########################################################################################### 
 
@@ -37,8 +38,8 @@ class Form(QDialog):
         self.tab2= QWidget()
         self.tab3= QWidget()
         self.tab.addTab( self.tab1, "Prop" )
-        self.tab.addTab( self.tab2, "Biped" )
-        self.tab.addTab( self.tab3, "Quadruped" )
+        self.tab.addTab( self.tab2, "Skeleton" )
+        self.tab.addTab( self.tab3, "AutoRig" )
         self.tab1UI()
         self.tab2UI()
         self.tab3UI()
@@ -53,7 +54,19 @@ class Form(QDialog):
         self.setLayout(mainLayout)
         #self.resize( 220, 400 )
         self.setWindowTitle("RiggingSlave v1.0")
+        self.setObjectName("RiggingSlave v1.0")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
+    
+    def dockUi_Fn(self):
+        
+        if cmds.dockControl( "RiggingDock", q=1, ex=1 ):
+            cmds.deleteUI( "RiggingDock" )
+        floatingLayout= cmds.paneLayout( configuration= 'single' )
+        allowAreas= ['right', 'left']
+        cmds.dockControl( 'RiggingDock', area= 'right', allowedArea= allowAreas, content= floatingLayout, label='Rigging Slave' )
+        cmds.control( "RiggingSlave v1.0", e=1, p= floatingLayout)
+        
+        return True
         
 ###########################################################################################         
     
@@ -91,7 +104,7 @@ class Form(QDialog):
         propLayout= QGridLayout()
         propBox= QGroupBox("Auto Prop Rig")
 
-        ctrkMLabel= QLabel( "Control Method" )
+        ctrkMLabel= QLabel( "Method" )
         self.addSkinRB= QRadioButton("&Add Joint")
         self.addCnstRB= QRadioButton("&Constraint")
         self.propRigBttn= QPushButton( "Rig" )
@@ -108,7 +121,9 @@ class Form(QDialog):
 
         return propBox
         
-########################################################################################### 
+
+    ###########################################################################################        
+    ########################################################################################### 
 
     def PropAutoRig(self):
          selObj= cmds.ls(sl=1)
@@ -161,13 +176,15 @@ class Form(QDialog):
          else:
              cmds.warning( "Nothing is selected!!!" )
             
-
+    ########################################################################################### 
+    ########################################################################################### 
 ###########################################################################################         
     
     def ropeGrpBox(self):
         ropeLayout= QGridLayout()
         ropeBox= QGroupBox("Auto Rope Rig")
         
+        ctrlMLabel= QLabel( "Method :" )
         IKSpineRB= QRadioButton("&IK Spine")
         self.wireInOneRB= QRadioButton( "&Wire Deformer" )
 
@@ -189,13 +206,14 @@ class Form(QDialog):
         
         self.wireInOneRB.setChecked(True)
         
-        ropeLayout.addWidget( IKSpineRB, 0, 0 )
-        ropeLayout.addWidget( self.wireInOneRB, 0, 1 )
-        ropeLayout.addWidget( self.crvLE, 1, 0, 1, 3 )
-        ropeLayout.addWidget( crvBttn, 2, 0, 1, 3 )
-        ropeLayout.addWidget( ctrlLabel, 3, 0 )
-        ropeLayout.addWidget( self.ctrlSB, 3, 1 )
-        ropeLayout.addWidget( ropeRigBttn, 4, 0, 1, 3 )
+        ropeLayout.addWidget( ctrlMLabel, 0, 0 )
+        ropeLayout.addWidget( IKSpineRB, 1, 0 )
+        ropeLayout.addWidget( self.wireInOneRB, 1, 1 )
+        ropeLayout.addWidget( self.crvLE, 2, 0, 1, 3 )
+        ropeLayout.addWidget( crvBttn, 3, 0, 1, 3 )
+        ropeLayout.addWidget( ctrlLabel, 4, 0 )
+        ropeLayout.addWidget( self.ctrlSB, 4, 1 )
+        ropeLayout.addWidget( ropeRigBttn, 5, 0, 1, 3 )
         ropeBox.setLayout( ropeLayout )
         
         return ropeBox
@@ -214,83 +232,241 @@ class Form(QDialog):
 
 ########################################################################################### 
     
-    # Biped Tab UI
+    # skeleton Tab UI
     def tab2UI(self):
         tab2Layout= QVBoxLayout()
-        tab2Layout.addWidget( self.boneGrpBox() )
-        tab2Layout.addWidget( self.bindSkinGrpBox() )
-        tab2Layout.addWidget( self.bipedRigGrpBox() )
+        tab2Layout.addWidget( self.proxyJointGrpBox() )
+        tab2Layout.addWidget( self.finalizeGrpBox() )
         self.tab2.setLayout( tab2Layout )
         tab2Layout.addStretch(1)
+    
+    def proxyJointGrpBox(self):
+        pjLayout= QGridLayout()
+        pjBox= QGroupBox("Proxy Joint")
+        self.torsoCB= QCheckBox( "  Setup Torso" )
+        self.torsoCB.setChecked(True)
+        pjLayout.addWidget( self.headGrpBox() )
+        pjLayout.addWidget( self.torsoCB )
+        pjLayout.addWidget( self.armGrpBox() )
+        pjLayout.addWidget( self.legGrpBox() )
+        pjBox.setLayout( pjLayout )
         
-    def boneGrpBox(self):
-        boneLayout= QGridLayout()
-        boneBox= QGroupBox("Proxy Joint")
+        return pjBox
+    
+    def headGrpBox(self):
+        headLayout= QGridLayout()
+        self.headBox= QGroupBox("Setup Head")
+        self.headBox.setCheckable(True)
+        self.headBox.setChecked(True)
         
-        mirrorLabel= QLabel( "Mirror Joint?" ) 
-        self.yesRB= QRadioButton( "Yes" )
-        self.noRB= QRadioButton( "No" )
+        self.eyeCB= QCheckBox( "Eyes" )
+        self.eyeCB.setChecked(True)
+        self.jawCB= QCheckBox( "Jaw" )
+        self.jawCB.setChecked(True)
+        self.tongueCB= QCheckBox( "Tongue" )
+        self.tongueCB.setChecked(True)
+        self.teethCB= QCheckBox( "Teeth" )
+        self.teethCB.setChecked(True)        
         
-        setUpJntBttn= QPushButton("Create")
-        resetJntBttn= QPushButton("Reset")
-        resetJntBttn.setStyleSheet("background-color: #333333 ")
-        freezeJntBttn= QPushButton( "Polish" )
-        freezeJntBttn.setStyleSheet("background-color: #666666")
+        headLayout.addWidget( self.eyeCB, 0,0 )
+        headLayout.addWidget( self.jawCB, 0,1 )
+        headLayout.addWidget( self.tongueCB, 1,0 )
+        headLayout.addWidget( self.teethCB, 1,1 )
+        self.headBox.setLayout( headLayout )
         
-        self.yesRB.setChecked(True)
+        return self.headBox
+    
+    def armGrpBox(self):
+        armLayout= QGridLayout()
+        self.armBox= QGroupBox("Setup Arm")
+        self.armBox.setCheckable(True)
+        self.armBox.setChecked(True)
         
-        boneLayout.addWidget( mirrorLabel, 0, 0 )
-        boneLayout.addWidget( self.yesRB, 0, 1 )
-        boneLayout.addWidget( self.noRB, 0, 2 )
-        boneLayout.addWidget( setUpJntBttn, 1, 0, 1, 3 )
-        boneLayout.addWidget( resetJntBttn, 2, 0, 1, 3 )
-        boneLayout.addWidget( freezeJntBttn, 3, 0, 1, 3 )
-        boneBox.setLayout( boneLayout )
+        self.aCB= QCheckBox( "Symmetrical Arm" ) 
+        self.aCB.setChecked(True)
         
-        return boneBox
+        armLayout.addWidget( self.fingersGrpBox(), 0,0,1,3 )
+        armLayout.addWidget( self.aCB, 1,0 )
+        self.armBox.setLayout( armLayout )
         
-    def bindSkinGrpBox(self):
-        bindSkinLayout= QVBoxLayout()
-        bindSkinBox= QGroupBox( "Skinning" )
+        return self.armBox
         
-        bindBttn= QPushButton( "Bind Skin" )
-
-        bindSkinLayout.addWidget( bindBttn )
-        bindSkinBox.setLayout( bindSkinLayout )
+    def fingersGrpBox(self):
+        fingerLayout= QGridLayout()
+        self.fingerBox= QGroupBox("Setup Finger")
+        self.fingerBox.setCheckable(True)
+        self.fingerBox.setChecked(True)
         
-        return bindSkinBox
+        fingerLabel= QLabel("Finger Number:")
+        self.finNoSB= QDoubleSpinBox()
+        self.finNoSB.setRange( 1, 5 )
+        self.finNoSB.setValue( 5 )
         
-    def bipedRigGrpBox(self):
-        bipedLayout= QVBoxLayout()
-        bipedBox= QGroupBox( "Setup Controllers" )
+        fingerJntLabel= QLabel("Finger Joint:")
+        self.finJntNoSB= QDoubleSpinBox()
+        self.finJntNoSB.setRange( 1, 10 )
+        self.finJntNoSB.setValue( 4 )
         
-        setupRigBttn= QPushButton( "Setup Rig" )
-        setupRigBttn.setStyleSheet("background-color: #777777")
+        fingerLayout.addWidget( fingerLabel, 0, 0 )
+        fingerLayout.addWidget( self.finNoSB, 0, 1 )
+        fingerLayout.addWidget( fingerJntLabel, 1, 0 )
+        fingerLayout.addWidget( self.finJntNoSB, 1, 1 )
+        self.fingerBox.setLayout( fingerLayout )
         
-        bipedLayout.addWidget( self.bendyBox() )
-        bipedLayout.addWidget( setupRigBttn )
-        bipedBox.setLayout( bipedLayout )
+        return self.fingerBox
         
-        return bipedBox
+    def legGrpBox(self):
+        legLayout= QGridLayout()
+        self.legBox= QGroupBox("Setup Leg")
+        self.legBox.setCheckable(True)
+        self.legBox.setChecked(True)
         
-    def bendyBox(self):
-        bendyLayout= QVBoxLayout()
-        self.bendyBox= QGroupBox("Bendy Setup")
-        self.bendyBox.setCheckable(True)
-        self.bendyBox.setChecked(True)
+        self.lCB= QCheckBox( "Symmetrical Leg" ) 
+        self.lCB.setChecked(True)
         
-        self.allRB= QRadioButton( "All" )
-        self.armRB= QRadioButton( "Arm" )
-        self.legRB= QRadioButton( "Leg" )
+        legLayout.addWidget( self.lCB, 0, 0 )
+        self.legBox.setLayout( legLayout )
         
-        self.allRB.setChecked(True)
+        return self.legBox
         
-        bendyLayout.addWidget( self.allRB )
-        bendyLayout.addWidget( self.armRB )
-        bendyLayout.addWidget( self.legRB )
-        self.bendyBox.setLayout( bendyLayout )
+    def finalizeGrpBox(self):
+        finLayout= QGridLayout()
+        finBox= QGroupBox( "Finalize" )
         
-        return self.bendyBox
+        self.createBttn= QPushButton( "&Create" )
+        resetBttn= QPushButton( "&Reset" )
+        resetBttn.setStyleSheet("background-color: #333333 ")
+        finBttn= QPushButton( "&Polish" )
+        finBttn.setStyleSheet("background-color: #666666")
+        
+        # SIGNAL
+        self.createBttn.clicked.connect( self.createSkeleton )
+        #resetBttn.clicked.connect( self.resetSkeletonPose )
+        #finBttn.clicked.connect( self.polishSkeleton )
+        
+        finLayout.addWidget( self.createBttn,0,0 )
+        finLayout.addWidget( self.scaleGrpBox() )
+        finLayout.addWidget( resetBttn, 2,0 )
+        finLayout.addWidget( finBttn, 3,0 )        
+        finBox.setLayout( finLayout )
+        
+        return finBox
+    
+    def scaleGrpBox(self):
+        
+        scLayout= QGridLayout()
+        scBox= QGroupBox( "Scale" )
+        
+        self.scaleSlider= QSlider( Qt.Horizontal )
+        self.scaleSlider.setRange( 0.01, 10 )
+        self.scaleSlider.setValue( 1 )
+        self.scaleSlider.tickPosition()
+        self.scaleSB= QDoubleSpinBox()
+        self.scaleSB.setRange( 0.01, 10 )
+        self.scaleSB.setSingleStep(0.1)
+        self.scaleSB.setValue( 1 )
+        
+        # SIGNAL
+        self.connect(self.scaleSlider, SIGNAL("valueChanged(int)"), self.updateScaleSB)
+        self.connect(self.scaleSB, SIGNAL("valueChanged(double)"), self.updateScaleSlider)
+        
+        scLayout.addWidget( self.scaleSlider,0,0 )
+        scLayout.addWidget( self.scaleSB, 0,1 )       
+        scBox.setLayout( scLayout )
+        
+        return scBox
+    ########################################################################################### 
+    ###########################################################################################
+    def createSkeleton(self):
+        jntSize= self.scaleSB.value()
+        labelVis= 0
+        # Checklist
+        try:
+            if self.headBox.isChecked() == False:
+                if self.torsoCB.isChecked() == False:
+                    if self.armBox.isChecked() == False:
+                        if self.legBox.isChecked() == False:
+                            self.createBttn.setEnabled(False)
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+       except:
+           bone= PS.proxyBipedJoint_Cl( jntSize, labelVis )
+           # Setup Head
+           if self.headBox.isChecked() == True:
+               bone.proxyHead_Fn()
+               if self.eyeCB.isChecked() == True:
+                   bone.proxyEyes_Fn("head_Jnt01","head_Jnt02")
+               else:
+                   pass
+               if self.jawCB.isChecked() == True:
+                   bone.proxyJaw_Fn("head_Jnt01")
+                   if self.tongueCB.isChecked() == True:
+                       bone.proxyTongue_Fn("jaw_Jnt01")
+                   else:
+                       pass
+                   if self.teethCB.isChecked() == True:
+                       bone.proxyTeeths_Fn("head_Jnt01","jaw_Jnt01")
+                   else:
+                       pass
+               else:
+                   pass
+           
+           # Setup Torso
+           if self.torsoCB.isChecked() == True:
+               bone.proxyTorso_Fn()
+           else:
+               pass
+           
+           # Setup Arm
+           if self.armBox.isChecked() == True:
+               bone.proxyArm_Fn()
+               if self.fingerBox.isChecked() == True:
+                   fingerNum= self.finNoSB.value()
+                   fingerJntNum= self.finJntNoSB.value()
+                   bone.proxyFingers_Fn("L_wrist_Jnt02","L_palm_Jnt01", fingerNum, fingerJntNum)
+               else:
+                   pass
+               if self.aCB.isChecked() == True:
+                   tmpAGrpL= cmds.group( n= "L_arm_tmpGrp", em=1 )
+                   cmds.parent( "L_clavicle_Jnt01", tmpAGrpL )
+                   cmds.parent( tmpAGrpL, "skeleton01" )
+                   tmpAGrpR= cmds.instance( tmpAGrpL, n= tmpAGrpL.replace("L_", "R_"))[0]
+                   cmds.scale( -1, 1, 1, tmpAGrpR, r=1 )
+               else:
+                   cmds.mirrorJoint( "L_clavicle_Jnt01", mirrorYZ= 1, mirrorBehavior= True, searchReplace=('L_', 'R_')  )                    
+           else:
+               pass
+           # Setup Leg
+           if self.legBox.isChecked() == True:
+               bone.proxyLeg_Fn()
+               if self.lCB.isChecked() == True:
+                   tmpLGrpL= cmds.group( n= "L_leg_tmpGrp", em=1 )
+                   cmds.parent( "L_hip_Jnt01", tmpAGrpL )
+                   cmds.parent( tmpLGrpL, "skeleton01" )
+                   tmpLGrpR= cmds.instance( tmpLGrpL, n= tmpLGrpL.replace("L_", "R_"))[0]
+                   cmds.scale( -1, 1, 1, tmpLGrpR, r=1 )
+               else:
+                   cmds.mirrorJoint( "L_hip_Jnt01", mirrorYZ= 1, mirrorBehavior= True, searchReplace=('L_', 'R_')  )
+           print "Proxy Joint Created.",
+           
+    def updateScaleSB(self):
+        
+        sliderValue= self.scaleSlider.value()
+        self.scaleSB.setValue( sliderValue )
+    
+    def updateScaleSlider(self):
+        
+        SBValue= self.scaleSB.value()
+        self.scaleSlider.setValue( SBValue )
+    ########################################################################################### 
+    ###########################################################################################
+        
 
 ########################################################################################### 
         
@@ -375,5 +551,7 @@ class Form(QDialog):
 
         
 if __name__ == "__main__":
+    if cmds.window("RiggingSlave v1.0", q=1, ex=1):
+        cmds.deleteUI( "RiggingSlave v1.0" )
     a= Form()
     a.show()
