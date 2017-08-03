@@ -230,7 +230,7 @@ class proxyBipedJoint_Cl():
             pass
         cmds.select(cl=1)
         # Collecting Joints Default Value
-        self.teethDVdict= { "upTeeth":[(0,1,9), (0,0,0)], "self.jawEnd":[(0,-2,7), (0,0,0)] }
+        self.teethDVdict= { "upTeeth":[(0,1,9), (0,0,0)], "dnTeeth":[(0,-2,7), (0,0,0)] }
         
     # Proxy Torso Function
     def proxyTorso_Fn(self):
