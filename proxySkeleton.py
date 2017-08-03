@@ -33,35 +33,35 @@ class proxyBipedJoint_Cl():
         self.headJnt01= cmds.joint( n= "head_Jnt01", rad=self.jntRad, p=[0,169.779,-5.71], o=[-5,0,0] )
         cmds.setAttr( "%s.side" % self.headJnt01, 0 )
         cmds.setAttr( "%s.type" % self.headJnt01, 8 )
-        headEnd= cmds.joint( n= "head_End01", rad=self.jntRad, p=[0,185.6916,-4.038], o=[0,0,0] )
-        cmds.setAttr( "%s.side" % headEnd, 0 )
-        cmds.setAttr( "%s.type" % headEnd, 18 )
-        cmds.setAttr( "%s.otherType" % headEnd, "HeadEnd", type= "string" )
+        self.headEnd= cmds.joint( n= "head_End01", rad=self.jntRad, p=[0,185.6916,-4.038], o=[0,0,0] )
+        cmds.setAttr( "%s.side" % self.headEnd, 0 )
+        cmds.setAttr( "%s.type" % self.headEnd, 18 )
+        cmds.setAttr( "%s.otherType" % self.headEnd, "self.headEnd", type= "string" )
         cmds.select( cl=1 )
-        self.headJnt02= cmds.duplicate( headEnd, n= str(headEnd).replace( "End01", "Jnt02" ))[0]
+        self.headJnt02= cmds.duplicate( self.headEnd, n= str(self.headEnd).replace( "End01", "Jnt02" ))[0]
         cmds.setAttr( "%s.side" % self.headJnt02, 0 )
         cmds.setAttr( "%s.type" % self.headJnt02, 18 )
         cmds.setAttr( "%s.otherType" % self.headJnt02, "Head02", type= "string" )
-        self.headEndTY= cmds.getAttr( "%s.ty" % headEnd )
-        cmds.setAttr( "%s.ty" % self.headJnt02, self.headEndTY/2 )
-        cmds.parent( headEnd, self.headJnt02 )
+        headEndTY= cmds.getAttr( "%s.ty" % self.headEnd )
+        cmds.setAttr( "%s.ty" % self.headJnt02, headEndTY/2 )
+        cmds.parent( self.headEnd, self.headJnt02 )
         cmds.parent( self.neckJnt, self.worldLoc )
         cmds.select( cl=1 )
-        proxyHeadJnt= [ self.neckJnt, self.headJnt01, self.headJnt02, headEnd ]
-        proxyHeadEnd= [ self.headJnt02, headEnd ]
+        proxyHeadJnt= [ self.neckJnt, self.headJnt01, self.headJnt02, self.headEnd ]
+        proxyself.headEnd= [ self.headJnt02, self.headEnd ]
         for each in proxyHeadJnt:
             cmds.setAttr( "%s.sx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
             cmds.setAttr( "%s.v" % each, l=1, ch=1 )
-        for each in proxyHeadEnd:
+        for each in proxyself.headEnd:
             cmds.setAttr( "%s.tx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.tz" % each, l=1, ch=1 )
             cmds.setAttr( "%s.rx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.ry" % each, l=1, ch=1 )
             cmds.setAttr( "%s.rz" % each, l=1, ch=1 )
         # Collecting Joints Default Value
-        self.headDVdict= { "neck":[(0,158,-8),(11,0,0)], "head01":[(0,12,0),(-5,0,0)], "head02":[(0,8,0),(0,0,0)], "headEnd":[(0,8,0),(0,0,0)] }
+        self.headDVdict= { "neck":[(0,158,-8),(11,0,0)], "head01":[(0,12,0),(-5,0,0)], "head02":[(0,8,0),(0,0,0)], "self.headEnd":[(0,8,0),(0,0,0)] }
                                                                                                                                                 
     # Proxy Eyes Function    
     def proxyEyes_Fn(self, head01, head02):
