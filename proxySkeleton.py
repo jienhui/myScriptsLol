@@ -76,14 +76,14 @@ class proxyBipedJoint_Cl():
         cmds.setAttr( "%s.side" % self.lEyelidJnt, 1 )
         cmds.setAttr( "%s.type" % self.lEyelidJnt, 18 )
         cmds.setAttr( "%s.otherType" % self.lEyelidJnt, "Eyelid", type= "string" )
-        lEyeEnd= cmds.duplicate( self.lEyeJnt, n=str(self.lEyeJnt).replace( "Jnt", "End" ), rc=1 )[0]
-        duplicatedChild= cmds.listRelatives( lEyeEnd, c=1 )
+        self.lEyeEnd= cmds.duplicate( self.lEyeJnt, n=str(self.lEyeJnt).replace( "Jnt", "End" ), rc=1 )[0]
+        duplicatedChild= cmds.listRelatives( self.lEyeEnd, c=1 )
         cmds.delete( duplicatedChild )
-        cmds.setAttr( "%s.side" % lEyeEnd, 1 )
-        cmds.setAttr( "%s.type" % lEyeEnd, 18 )
-        cmds.setAttr( "%s.otherType" % lEyeEnd, "EyeEnd", type= "string" )
-        cmds.parent( lEyeEnd, self.lEyeJnt )
-        cmds.setAttr( "%s.tz" % lEyeEnd, 2 )
+        cmds.setAttr( "%s.side" % self.lEyeEnd, 1 )
+        cmds.setAttr( "%s.type" % self.lEyeEnd, 18 )
+        cmds.setAttr( "%s.otherType" % self.lEyeEnd, "EyeEnd", type= "string" )
+        cmds.parent( self.lEyeEnd, self.lEyeJnt )
+        cmds.setAttr( "%s.tz" % self.lEyeEnd, 2 )
         cmds.select(cl=1)
         # Right Eye
         self.rEyeJnt= cmds.joint( n="R_eye_Jnt01", rad=self.jntRad, p=[-3,174.8055,3.86755], o=[0,5,0] )
@@ -94,19 +94,19 @@ class proxyBipedJoint_Cl():
         cmds.setAttr( "%s.side" % self.rEyelidJnt, 2 )
         cmds.setAttr( "%s.type" % self.rEyelidJnt, 18 )
         cmds.setAttr( "%s.otherType" % self.rEyelidJnt, "Eyelid", type= "string" )
-        rEyeEnd= cmds.duplicate( self.rEyeJnt, n=str(self.rEyeJnt).replace( "Jnt", "End" ), rc=1 )[0]
-        duplicatedChild= cmds.listRelatives( rEyeEnd, c=1 )
+        self.rEyeEnd= cmds.duplicate( self.rEyeJnt, n=str(self.rEyeJnt).replace( "Jnt", "End" ), rc=1 )[0]
+        duplicatedChild= cmds.listRelatives( self.rEyeEnd, c=1 )
         cmds.delete( duplicatedChild )
-        cmds.setAttr( "%s.side" % rEyeEnd, 2 )
-        cmds.setAttr( "%s.type" % rEyeEnd, 18 )
-        cmds.setAttr( "%s.otherType" % rEyeEnd, "EyeEnd", type= "string" )
-        cmds.parent( rEyeEnd, self.rEyeJnt )
-        cmds.setAttr( "%s.tz" % rEyeEnd, 2 )
+        cmds.setAttr( "%s.side" % self.rEyeEnd, 2 )
+        cmds.setAttr( "%s.type" % self.rEyeEnd, 18 )
+        cmds.setAttr( "%s.otherType" % self.rEyeEnd, "EyeEnd", type= "string" )
+        cmds.parent( self.rEyeEnd, self.rEyeJnt )
+        cmds.setAttr( "%s.tz" % self.rEyeEnd, 2 )
         if cmds.objExists( self.head02 ) == True:
             cmds.parent( self.lEyeJnt, self.rEyeJnt, self.head02 )
             cmds.select( cl=1 )
-        proxyFaceJnt= [ self.lEyeJnt, self.lEyelidJnt, self.rEyeJnt, self.rEyelidJnt, lEyeEnd, rEyeEnd ]
-        proxyFaceEnd= [ self.lEyelidJnt, self.rEyelidJnt, lEyeEnd, rEyeEnd ]
+        proxyFaceJnt= [ self.lEyeJnt, self.lEyelidJnt, self.rEyeJnt, self.rEyelidJnt, self.lEyeEnd, self.rEyeEnd ]
+        proxyFaceEnd= [ self.lEyelidJnt, self.rEyelidJnt, self.lEyeEnd, self.rEyeEnd ]
         for each in proxyFaceJnt:
             cmds.setAttr( "%s.sx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
@@ -124,7 +124,7 @@ class proxyBipedJoint_Cl():
         cmds.setAttr( "%s.jointOrient" % self.rEyelidJnt, 0,0,0 )
         cmds.select( cl=1 )
         # Collecting Joints Default Value
-        self.eyesDVdict= { "lEye01":[(3,-2,9), (0,5,0)], "lEyelid":[(0,0,0), (0,0,0)], "lEyeEnd":[(0,0,2), (0,0,0)], "rEye01":[(-3,-2,9), (0,5,0)], "rEyelid":[(0,0,0), (0,0,0)], "rEyeEnd":[(0,0,2), (0,0,0)] }
+        self.eyesDVdict= { "lEye01":[(3,-2,9), (0,5,0)], "lEyelid":[(0,0,0), (0,0,0)], "self.lEyeEnd":[(0,0,2), (0,0,0)], "rEye01":[(-3,-2,9), (0,5,0)], "rEyelid":[(0,0,0), (0,0,0)], "self.rEyeEnd":[(0,0,2), (0,0,0)] }
 
     # Proxy Jaw Function
     def proxyJaw_Fn(self, head01):
@@ -135,17 +135,17 @@ class proxyBipedJoint_Cl():
         cmds.setAttr( "%s.side" % self.jawJnt, 0 )
         cmds.setAttr( "%s.type" % self.jawJnt, 18 )
         cmds.setAttr( "%s.otherType" % self.jawJnt, "Jaw", type= "string" )
-        jawEnd= cmds.duplicate( self.jawJnt, n=str(self.jawJnt).replace( "Jnt", "End" ) )[0]
-        cmds.parent( jawEnd, self.jawJnt )
-        cmds.setAttr( "%s.tz" % jawEnd, 10 )
-        cmds.setAttr( "%s.side" % jawEnd, 0 )
-        cmds.setAttr( "%s.type" % jawEnd, 18 )
-        cmds.setAttr( "%s.otherType" % jawEnd, "JawEnd", type= "string" )
+        self.jawEnd= cmds.duplicate( self.jawJnt, n=str(self.jawJnt).replace( "Jnt", "End" ) )[0]
+        cmds.parent( self.jawEnd, self.jawJnt )
+        cmds.setAttr( "%s.tz" % self.jawEnd, 10 )
+        cmds.setAttr( "%s.side" % self.jawEnd, 0 )
+        cmds.setAttr( "%s.type" % self.jawEnd, 18 )
+        cmds.setAttr( "%s.otherType" % self.jawEnd, "self.jawEnd", type= "string" )
         if cmds.objExists( self.head01 ) == True:
             cmds.parent( self.jawJnt, self.head01 )
             cmds.select( cl=1 )
-        proxyFaceJnt= [ self.jawJnt, jawEnd ]
-        proxyFaceEnd= [ jawEnd ]
+        proxyFaceJnt= [ self.jawJnt, self.jawEnd ]
+        proxyFaceEnd= [ self.jawEnd ]
         for each in proxyFaceJnt:
             cmds.setAttr( "%s.sx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
@@ -159,7 +159,7 @@ class proxyBipedJoint_Cl():
             cmds.setAttr( "%s.rz" % each, l=1, ch=1 )
         cmds.select( cl=1 )
         # Collecting Joints Default Value
-        self.jawDVdict= { "jaw":[(0,1.5,2.5), (15,0,0)], "jawEnd":[(0,0,10), (0,0,0)] }
+        self.jawDVdict= { "jaw":[(0,1.5,2.5), (15,0,0)], "self.jawEnd":[(0,0,10), (0,0,0)] }
     
     # Proxy Tongue Function
     def proxyTongue_Fn(self, jaw):
@@ -230,7 +230,7 @@ class proxyBipedJoint_Cl():
             pass
         cmds.select(cl=1)
         # Collecting Joints Default Value
-        self.teethDVdict= { "upTeeth":[(0,1,9), (0,0,0)], "jawEnd":[(0,-2,7), (0,0,0)] }
+        self.teethDVdict= { "upTeeth":[(0,1,9), (0,0,0)], "self.jawEnd":[(0,-2,7), (0,0,0)] }
         
     # Proxy Torso Function
     def proxyTorso_Fn(self):
