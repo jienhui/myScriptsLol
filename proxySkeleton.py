@@ -324,6 +324,7 @@ class proxyBipedJoint_Cl():
         self.palm= palm
         self.fingerNum= fingerNum
         self.fingerJntNum= fingerJntNum
+        self.fingerList= []
         # Collecting Joints Default Value
         self.lFingerDVdict= { "thumbA":[(0,0,0), (0,0,0)], "IndexA":[(0,0,0), (0,0,0)], "MiddleA":[(0,0,0),(0,0,0)], "RingA":[(0,0,0),(0,0,0)], "PinkyA":[(0,0,0),(0,0,0)], "Fingers":[(3,0,0),(0,0,0)] }
         self.rFingerDVdict= { "thumbA":[(0,0,0), (0,0,0)], "IndexA":[(0,0,0), (0,0,0)], "MiddleA":[(0,0,0),(0,0,0)], "RingA":[(0,0,0),(0,0,0)], "PinkyA":[(0,0,0),(0,0,0)], "Fingers":[(-3,0,0),(0,0,0)] }
@@ -358,6 +359,7 @@ class proxyBipedJoint_Cl():
                 cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.v" % each, l=1, ch=1 )
+                self.fingerList.append( each )
             for each in range(1, self.fingerJntNum):
                 cmds.setAttr( "%s.ty" % self.thumbJnt[each], l=1, ch=1 )
                 cmds.setAttr( "%s.tz" % self.thumbJnt[each], l=1, ch=1 )
@@ -407,6 +409,7 @@ class proxyBipedJoint_Cl():
                 cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.v" % each, l=1, ch=1 )
+                self.fingerList.append( each )
             for each in range(1, self.fingerJntNum):
                 cmds.setAttr( "%s.ty" % self.indexJnt[each], l=1, ch=1 )
                 cmds.setAttr( "%s.tz" % self.indexJnt[each], l=1, ch=1 )
@@ -451,6 +454,7 @@ class proxyBipedJoint_Cl():
                 cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.v" % each, l=1, ch=1 )
+                self.fingerList.append( each )
             for each in range(1, self.fingerJntNum):
                 cmds.setAttr( "%s.ty" % self.middleJnt[each], l=1, ch=1 )
                 cmds.setAttr( "%s.tz" % self.middleJnt[each], l=1, ch=1 )
@@ -493,6 +497,7 @@ class proxyBipedJoint_Cl():
                 cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.v" % each, l=1, ch=1 )
+                self.fingerList.append( each )
             for each in range(1, self.fingerJntNum):
                 cmds.setAttr( "%s.ty" % self.ringJnt[each], l=1, ch=1 )
                 cmds.setAttr( "%s.tz" % self.ringJnt[each], l=1, ch=1 )
@@ -537,6 +542,7 @@ class proxyBipedJoint_Cl():
                 cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
                 cmds.setAttr( "%s.v" % each, l=1, ch=1 )
+                self.fingerList.append( each )
             for each in range(1, self.fingerJntNum):
                 cmds.setAttr( "%s.ty" % self.pinkyJnt[each], l=1, ch=1 )
                 cmds.setAttr( "%s.tz" % self.pinkyJnt[each], l=1, ch=1 )
