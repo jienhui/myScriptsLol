@@ -48,20 +48,20 @@ class proxyBipedJoint_Cl():
         cmds.parent( self.neckJnt, self.worldLoc )
         cmds.select( cl=1 )
         proxyHeadJnt= [ self.neckJnt, self.headJnt01, self.headJnt02, self.headEnd ]
-        proxyself.headEnd= [ self.headJnt02, self.headEnd ]
+        proxyheadEnd= [ self.headJnt02, self.headEnd ]
         for each in proxyHeadJnt:
             cmds.setAttr( "%s.sx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sy" % each, l=1, ch=1 )
             cmds.setAttr( "%s.sz" % each, l=1, ch=1 )
             cmds.setAttr( "%s.v" % each, l=1, ch=1 )
-        for each in proxyself.headEnd:
+        for each in proxyheadEnd:
             cmds.setAttr( "%s.tx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.tz" % each, l=1, ch=1 )
             cmds.setAttr( "%s.rx" % each, l=1, ch=1 )
             cmds.setAttr( "%s.ry" % each, l=1, ch=1 )
             cmds.setAttr( "%s.rz" % each, l=1, ch=1 )
         # Collecting Joints Default Value
-        self.headDVdict= { "neck":[(0,158,-8),(11,0,0)], "head01":[(0,12,0),(-5,0,0)], "head02":[(0,8,0),(0,0,0)], "self.headEnd":[(0,8,0),(0,0,0)] }
+        self.headDVdict= { "neck":[(0,158,-8),(11,0,0)], "head01":[(0,12,0),(-5,0,0)], "head02":[(0,8,0),(0,0,0)], "headEnd":[(0,8,0),(0,0,0)] }
                                                                                                                                                 
     # Proxy Eyes Function    
     def proxyEyes_Fn(self, head01, head02):
@@ -124,7 +124,7 @@ class proxyBipedJoint_Cl():
         cmds.setAttr( "%s.jointOrient" % self.rEyelidJnt, 0,0,0 )
         cmds.select( cl=1 )
         # Collecting Joints Default Value
-        self.eyesDVdict= { "lEye01":[(3,-2,9), (0,5,0)], "lEyelid":[(0,0,0), (0,0,0)], "self.lEyeEnd":[(0,0,2), (0,0,0)], "rEye01":[(-3,-2,9), (0,5,0)], "rEyelid":[(0,0,0), (0,0,0)], "self.rEyeEnd":[(0,0,2), (0,0,0)] }
+        self.eyesDVdict= { "lEye01":[(3,-2,9), (0,5,0)], "lEyelid":[(0,0,0), (0,0,0)], "lEyeEnd":[(0,0,2), (0,0,0)], "rEye01":[(-3,-2,9), (0,5,0)], "rEyelid":[(0,0,0), (0,0,0)], "rEyeEnd":[(0,0,2), (0,0,0)] }
 
     # Proxy Jaw Function
     def proxyJaw_Fn(self, head01):
@@ -159,7 +159,7 @@ class proxyBipedJoint_Cl():
             cmds.setAttr( "%s.rz" % each, l=1, ch=1 )
         cmds.select( cl=1 )
         # Collecting Joints Default Value
-        self.jawDVdict= { "jaw":[(0,1.5,2.5), (15,0,0)], "self.jawEnd":[(0,0,10), (0,0,0)] }
+        self.jawDVdict= { "jaw":[(0,1.5,2.5), (15,0,0)], "jawEnd":[(0,0,10), (0,0,0)] }
     
     # Proxy Tongue Function
     def proxyTongue_Fn(self, jaw):
@@ -376,7 +376,7 @@ class proxyBipedJoint_Cl():
         if self.fingerNum >= 1:
             self.indexJnt= []
             cmds.select(self.palm)
-            indexA= cmds.joint( n="L_Index_Jnt01", rad=self.jntRad, p=[72.72226,110.18398, 0.50594], o=[0,0,0] )
+            indexA= cmds.joint( n="L_index_Jnt01", rad=self.jntRad, p=[72.72226,110.18398, 0.50594], o=[0,0,0] )
             cmds.setAttr( "%s.side" % indexA, 1 )
             cmds.setAttr( "%s.type" % indexA, 18 )
             cmds.setAttr( "%s.otherType" % indexA, "Index", type= "string" )
@@ -418,8 +418,8 @@ class proxyBipedJoint_Cl():
             # Collecting Joints Default Value
             indexAtx= cmds.getAttr( "%s.tx" % indexA )
             indexAtz= cmds.getAttr( "%s.tz" % indexA )
-            self.lFingerDVdict['indexA'] = [(indexAtx,0,indexAtz), (0,0,0)]
-            self.rFingerDVdict['indexA'] = [(-indexAtx,0,-indexAtz), (0,0,0)]
+            self.lFingerDVdict['IndexA'] = [(indexAtx,0,indexAtz), (0,0,0)]
+            self.rFingerDVdict['IndexA'] = [(-indexAtx,0,-indexAtz), (0,0,0)]
         else:
             print "Zero finger number. No finger joint will be create.",
         # Middle Finger
@@ -463,8 +463,8 @@ class proxyBipedJoint_Cl():
             # Collecting Joints Default Value
             middleAtx= cmds.getAttr( "%s.tx" % middleA )
             middleAtz= cmds.getAttr( "%s.tz" % middleA )
-            self.lFingerDVdict['middleA'] = [(middleAtx,0,middleAtz), (0,0,0)]
-            self.rFingerDVdict['middleA'] = [(-middleAtx,0,-middleAtz), (0,0,0)]       
+            self.lFingerDVdict['MiddleA'] = [(middleAtx,0,middleAtz), (0,0,0)]
+            self.rFingerDVdict['MiddleA'] = [(-middleAtx,0,-middleAtz), (0,0,0)]       
         else:
             pass
         # Ring Finger
@@ -506,8 +506,8 @@ class proxyBipedJoint_Cl():
             # Collecting Joints Default Value
             ringAtx= cmds.getAttr( "%s.tx" % ringA )
             ringAtz= cmds.getAttr( "%s.tz" % ringA )
-            self.lFingerDVdict['ringA'] = [(ringAtx,0,ringAtz), (0,0,0)]
-            self.rFingerDVdict['ringA'] = [(-ringAtx,0,-ringAtz), (0,0,0)]
+            self.lFingerDVdict['RingA'] = [(ringAtx,0,ringAtz), (0,0,0)]
+            self.rFingerDVdict['RingA'] = [(-ringAtx,0,-ringAtz), (0,0,0)]
         else:
             pass
         # Pinky Finger
@@ -551,8 +551,8 @@ class proxyBipedJoint_Cl():
             # Collecting Joints Default Value
             pinkyAtx= cmds.getAttr( "%s.tx" % pinkyA )
             pinkyAtz= cmds.getAttr( "%s.tz" % pinkyA )
-            self.lFingerDVdict['pinkyA'] = [(pinkyAtx,0,pinkyAtz), (0,0,0)]
-            self.rFingerDVdict['pinkyA'] = [(-pinkyAtx,0,-pinkyAtz), (0,0,0)]
+            self.lFingerDVdict['PinkyA'] = [(pinkyAtx,0,pinkyAtz), (0,0,0)]
+            self.rFingerDVdict['PinkyA'] = [(-pinkyAtx,0,-pinkyAtz), (0,0,0)]
         else:
             pass
         
@@ -647,3 +647,4 @@ if __name__ == "__main__":
     a.proxyFingers_Fn("L_wrist_Jnt02","L_palm_Jnt01", 5, 4)
     a.proxyLeg_Fn()
     #print a.headDVdict["neck"]
+    #print a.lFingerDVdict["IndexA"]
