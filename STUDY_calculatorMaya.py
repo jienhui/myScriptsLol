@@ -1,8 +1,9 @@
 import maya.OpenMayaUI as mui
 from math import *
-from PySide.QtCore import *
-from PySide.QtGui import *
-from shiboken import wrapInstance
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+from shiboken2 import wrapInstance
 
 def mayaMainWindow():
     mainWindow = mui.MQtUtil.mainWindow()
